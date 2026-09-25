@@ -1,0 +1,4 @@
+# Snapshot security allowlist
+# Intentionally empty: this candidate uses deny-by-default behavior.
+# Test data and placeholders are removed or sanitized by exact path/line;
+# no broad path or regex suppression is active.

@@ -1,0 +1,29 @@
+node_modules
+dist
+.output
+.vinxi
+.worktree-*
+.p0-closeout-docker
+pnpm-lock.yaml
+package-lock.json
+routeTree.gen.ts
+
+# M-02 machine-readable JSON subset kept with the mandated .yaml names.
+docs/specs/M-02/matrix*.yaml
+
+# Hash-addressed security evidence is sealed and must not be formatter-mutated.
+docs/evidence/security-scan/**
+
+# Raw computer-user captures (MCP Playwright a11y snapshots / console logs), from the
+# QA-BROWSER session and from adversarial verifiers, are evidence, not source: sealed
+# like the security scans, never formatter-mutated.
+docs/evidence/*/playwright-mcp*/**
+
+# Platform-managed generated sources
+AGENTS.md
+src/integrations/lovable/index.ts
+src/integrations/supabase/auth-attacher.ts
+src/integrations/supabase/auth-middleware.ts
+src/integrations/supabase/client.server.ts
+src/integrations/supabase/client.ts
+src/integrations/supabase/types.ts

@@ -1,0 +1,15 @@
+DROP POLICY IF EXISTS tenant_isolation ON calculation_snapshots;
+DROP POLICY IF EXISTS tenant_isolation ON purchase_price_history;
+DROP POLICY IF EXISTS tenant_isolation ON sales_items;
+DROP POLICY IF EXISTS tenant_isolation ON sales;
+REVOKE ALL ON TABLE calculation_snapshots, purchase_price_history, sales_items, sales FROM app_runtime;
+DROP TABLE IF EXISTS sales_items;
+DROP TABLE IF EXISTS sales;
+DROP TABLE IF EXISTS purchase_price_history;
+DROP TABLE IF EXISTS calculation_snapshots;
+ALTER TABLE products DROP CONSTRAINT IF EXISTS products_status_check;
+ALTER TABLE products DROP COLUMN IF EXISTS status;
+ALTER TABLE simulations DROP CONSTRAINT IF EXISTS simulations_scenario_type_check;
+ALTER TABLE simulations DROP COLUMN IF EXISTS result;
+ALTER TABLE simulations DROP COLUMN IF EXISTS scenario_type;
+ALTER TABLE simulations DROP COLUMN IF EXISTS engine_version;

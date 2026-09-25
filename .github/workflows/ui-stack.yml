@@ -1,0 +1,241 @@
+name: UI stack
+
+# Full pipeline: build, db:test/db:check, npm audit, Playwright e2e.
+# Docs-only pushes to main/develop go to ci-light.yml instead. Pull
+# requests always run this full pipeline (see AGENTS.md § Local quality gate).
+on:
+  pull_request:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - "docs/evidence/**"
+  # Run completo sob demanda (todos os projetos de browser), para quando a
+  # verificacao por push nao basta e nao ha PR aberto.
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Um push em rajada cria um run por commit; sem isto cada um consome a cota ate o fim.
+# O grupo e por workflow+ref, entao o run novo cancela o anterior da MESMA ref.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancelar e para `develop`. A verificacao da fronteira de producao (`main`) nunca e cancelada
+  # por um push posterior: o run de `main` e evidencia de release, nao rascunho de iteracao.
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    # A5: 12 min com o pior caso MEDIDO. A soma dos passos e ~9,5 min e o `playwright.config.ts`
+    # tem `retries: 0`, entao o e2e nao dobra por retry — o teto tem ~2,5 min de folga. Reavaliar
+    # com o p95 dos primeiros runs reais (criterio de reversao do WP-R8 §B4).
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: preco_que_da_lucro_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d preco_que_da_lucro_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      BUILD_RELEASE_CHANNEL: pre-beta-internal
+      DATABASE_ADMIN_URL: >-
+        postgresql://postgres:postgres@127.0.0.1:5432/preco_que_da_lucro_test
+      DATABASE_URL: >-
+        postgresql://postgres:postgres@127.0.0.1:5432/preco_que_da_lucro_test
+      # INV-006 / F-D2-runner-failopen: `src/test/product-contracts.test.ts` e
+      # `src/test/products-fk-conflict.test.ts` leem esta terceira URL como
+      # kill-switch contra credencial de produção herdada. Desde o WP-R6 o gate é
+      # `dbPrecondition()` (`src/test/helpers/db-precondition.ts`): **tudo ou nada, e
+      # falha alta** — nenhuma das três definidas ⇒ skip nomeado; qualquer uma
+      # definida ⇒ as três são exigidas e todas em loopback, senão o arquivo reprova
+      # com erro de precondição, nunca skip silencioso. Declarar as três aqui mantém os
+      # 9 + 4 casos executando (medido 2026-09-21: três em loopback ⇒ 14/14 em
+      # product-contracts e 15/15 em products-fk-conflict; qualquer uma remota ⇒ reprova
+      # alto).
+      # A versão anterior deste gate devolvia `true` para valor **ausente**, o que
+      # fazia o bloco executar com duas URLs faltando; isso foi substituído de
+      # propósito, porque ausência silenciosa era indistinguível de ambiente mal
+      # configurado.
+      DATABASE_URL_UNPOOLED: >-
+        postgresql://postgres:postgres@127.0.0.1:5432/preco_que_da_lucro_test
+      DATABASE_DRIVER: node-postgres
+      EXPECTED_POSTGRES_MAJOR: "17"
+      BETTER_AUTH_URL: http://127.0.0.1:4173
+      AUTH_TRUSTED_ORIGINS: http://127.0.0.1:4173
+      E2E_AUTH_EMAIL: teste@example.test
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # historico completo: o `m02:temporal-guard` resolve as ancoras de prosa contra o git, e
+          # um clone raso faz toda ancora citada em §1 parecer inexistente (a pesada ficou VERMELHA
+          # em `4c2e35d` exatamente por isso). A light ja usava `fetch-depth: 0`.
+          fetch-depth: 0
+      # Escopo por caminho: decide quais tiers caros rodam. Git nativo de proposito — uma action de
+      # terceiro seria mais uma dependencia a pinar por SHA. Em duvida (base desconhecida, primeira
+      # push de uma branch) o escopo devolve `true` para tudo: fail-closed, nunca fail-open.
+      - id: scope
+        name: Escopo (quais tiers caros se aplicam)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            base=""
+          else
+            base="${{ github.event.before }}"
+          fi
+          head="${{ github.sha }}"
+          # N1 (S6): `cat-file -e` testa EXISTENCIA, nao ancestralidade. Uma base presente mas nao
+          # ancestral (history reescrita) cai em `diff-por-caminho` sobre historias sem relacao —
+          # classificar isso seria medir o diff errado. A conjuncao inclui a ancestralidade.
+          if [ -z "$base" ] || [ "$base" = "0000000000000000000000000000000000000000" ]              || ! git cat-file -e "${base}^{commit}" 2>/dev/null              || ! git merge-base --is-ancestor "$base" "$head" 2>/dev/null; then
+            echo "base desconhecida (${base:-vazia}) -> rodando TODOS os tiers, incluindo a matriz de browsers"
+            # Os DOIS outputs: a versao anterior dizia "todos os tiers" e emitia so `db`, entao
+            # force-push, primeira push de branch e workflow_dispatch caiam no ramo de chromium-only.
+            # A afirmacao era falsa e o caminho era fail-open — achado do WP-R8.
+            echo "db=true" >> "$GITHUB_OUTPUT"
+            echo "crossbrowser=true" >> "$GITHUB_OUTPUT"
+            echo "motivo=base-desconhecida" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          files="$(git diff --name-only "$base" "$head")"
+          echo "arquivos alterados: $(printf '%s\n' "$files" | grep -c . || true)"
+          # Tiers de banco: schema, migrations, camadas que falam com o banco, runners e manifests.
+          if printf '%s\n' "$files" | grep -qE '^(drizzle/|src/db/|src/server/repositories/|src/server/services/|scripts/db/|package(-lock)?\.json)'; then
+            echo "db=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "db=false" >> "$GITHUB_OUTPUT"
+          fi
+          # Cross-browser: e a fronteira de release. PR (qualquer destino) e dispatch rodam tudo;
+          # push intermediario em `develop` roda chromium+mobile e deixa firefox/webkit para o PR.
+          if [ "${{ github.event_name }}" = "pull_request" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "crossbrowser=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "crossbrowser=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "motivo=diff-por-caminho" >> "$GITHUB_OUTPUT"
+      # actions/setup-node v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm install --global --ignore-scripts npm@11.14.1
+      - run: npm ci --ignore-scripts
+      - run: npm run m02:work-package-guard
+      - run: npm run m02:debts-guard
+      - run: npm run m02:temporal-guard
+      # DBT-19: as duas guardas abaixo rodavam em gate nenhum (`m02:boundaries`) ou so na light
+      # (`m02:secrets-audit`), entao um push so de codigo nunca as executava. Ambas sao offline,
+      # sem banco e baratas (~2,0 s medidas em 2026-09-23), por isso nao entram em tier.
+      - run: npm run m02:boundaries
+      - run: npm run m02:secrets-audit
+      - run: npm run m02:matrix:check
+      - run: npm run check:ui-stack
+      - run: npm run check:no-supabase-runtime
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run test
+      # Tier de banco: so roda quando o diff toca schema, migrations, camadas de banco, runners ou
+      # manifests. O passo de "pulado" e explicito de proposito: skip silencioso seria a classe de
+      # falha que este programa persegue desde o WP-R6.
+      # POLARIDADE FAIL-CLOSED: `!= 'false'` roda salvo falso EXPLICITO. A versao anterior usava
+      # `== 'true'`, e output vazio (step que engole erro, GITHUB_OUTPUT indisponivel) pulava o tier
+      # em silencio — fail-open pela porta dos outputs, exatamente a classe que o R4/R5/R6 perseguem.
+      - if: steps.scope.outputs.db != 'false'
+        run: npm run db:test
+      - if: steps.scope.outputs.db != 'false'
+        run: npm run db:check
+      - if: steps.scope.outputs.db == 'false'
+        name: Banco — pulado por escopo (nenhum caminho de banco no diff)
+        run: echo "::notice title=db tiers skipped::o diff nao toca drizzle/, src/db/, repositorios, servicos, scripts/db/ nem package.json/package-lock.json"
+      - name: Configure isolated runtime and E2E credentials
+        shell: bash
+        run: |
+          runtime_password="$(openssl rand -hex 24)"
+          auth_secret="$(openssl rand -hex 32)"
+          auth_password="$(openssl rand -base64 24 | tr -d '\n')"
+          db_host="127.0.0.1:5432/preco_que_da_lucro_test"
+          echo "::add-mask::${runtime_password}"
+          echo "::add-mask::${auth_secret}"
+          echo "::add-mask::${auth_password}"
+          {
+            runtime_url="postgresql://app_runtime:${runtime_password}@${db_host}"
+            echo "DATABASE_URL=${runtime_url}"
+            echo "E2E_DB_RUNTIME_PASSWORD=${runtime_password}"
+            echo "BETTER_AUTH_SECRET=${auth_secret}"
+            echo "E2E_AUTH_PASSWORD=${auth_password}"
+          } >> "$GITHUB_ENV"
+      - run: npm run build
+      - run: npm run check:bundle
+      # Keep dependency evidence independent from browser startup failures.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+      - name: Upload bundle evidence
+        if: always()
+        # actions/upload-artifact v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: bundle-evidence-${{ github.sha }}
+          path: |
+            .artifacts/bundle-report.json
+            .artifacts/build-warnings.json
+            .output/public/.vite/manifest.json
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 30
+      - id: browsers
+        name: Navegadores por tier
+        shell: bash
+        run: |
+          # Mesma polaridade fail-closed do lado shell: so cai em chromium-only com `false` EXPLICITO.
+          # O aviso e DERIVADO das mesmas variaveis que alimentam o install e o `playwright test`
+          # (N6/N10 do S6): prosa literal pode mentir quando a decisao mudar — dado nao mente.
+          if [ "${{ steps.scope.outputs.crossbrowser }}" = "false" ]; then
+            lista="chromium"
+            projetos="--project=chromium --project=mobile"
+            motivo="push intermediario — firefox/webkit rodam no PR e no dispatch"
+          else
+            lista="chromium firefox webkit"
+            projetos="--project=chromium --project=firefox --project=webkit --project=mobile"
+            motivo="fronteira de release (PR ou workflow_dispatch)"
+          fi
+          echo "::notice title=e2e::${motivo} — navegadores: ${lista} | projetos: ${projetos}"
+          echo "lista=${lista}" >> "$GITHUB_OUTPUT"
+          echo "projetos=${projetos}" >> "$GITHUB_OUTPUT"
+          # espelho verificavel do aviso: o que foi escolhido, impresso como dado (nao como prosa)
+          echo "navegadores escolhidos: ${lista} | projetos: ${projetos}"
+      # A4: cache dos binarios do Playwright (47 s -> ~3 s em cache hit). O SHA abaixo foi resolvido
+      # da API oficial (`repos/actions/cache/git/ref/tags/v4` -> commit 0057852b…), nunca de memoria:
+      # a repo fixa toda action por SHA de 40 e um SHA inventado quebraria a CI inteira.
+      - name: Cache dos navegadores do Playwright
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: playwright-${{ runner.os }}-
+      - run: npx playwright install --with-deps ${{ steps.browsers.outputs.lista }}
+      - run: npx playwright test ${{ steps.browsers.outputs.projetos }}
+      - name: Upload browser evidence
+        if: always()
+        # actions/upload-artifact v7.0.1
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: browser-evidence-${{ github.sha }}
+          path: |
+            .artifacts/playwright-results.json
+            playwright-report
+            test-results
+          if-no-files-found: warn
+          include-hidden-files: true
+          retention-days: 30

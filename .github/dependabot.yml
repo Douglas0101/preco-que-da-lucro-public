@@ -1,0 +1,34 @@
+# Dependabot — atualizações de VERSÃO (version updates) deste repositório.
+# Plano Mestre §25 ("Adicionar quando disponível: Dependabot") ·
+# docs/PLANO_MESTRE_OTIMIZACOES_VALIDADO_WEB_PRECO_QUE_DA_LUCRO.md.
+# Referência de campos obrigatórios (`version`, `updates`, `package-ecosystem`,
+# `directory`, `schedule.interval`) e de `directory: "/"` para o ecossistema
+# `github-actions`:
+# https://docs.github.com/en/code-security/reference/supply-chain-security/dependabot-options-reference
+#
+# ESCOPO REPO-LOCAL: este arquivo habilita apenas PRs de atualização versionada.
+# *Dependabot alerts* e *Dependabot security updates* NÃO são configuráveis por
+# arquivo — são settings do GitHub (dependency graph ligado no repo + alerts/
+# security updates habilitados em Settings → Code security), portanto vivem na
+# fila humana. Classificação item a item de §25:
+# docs/evidence/supply-chain-classification-2026-09-15.md.
+#
+# O ecossistema `github-actions` reescreve o SHA completo já pinado nas
+# workflows, preservando §25 "Actions pinadas por SHA" sem intervenção manual.
+
+version: 2
+updates:
+  # npm: package.json + package-lock.json na raiz (único manifest do repo).
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  # github-actions: `directory: "/"` faz o Dependabot varrer /.github/workflows
+  # e o action.yml/action.yaml da raiz.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 3

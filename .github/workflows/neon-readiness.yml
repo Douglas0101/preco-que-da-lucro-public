@@ -1,0 +1,356 @@
+name: Neon readiness
+
+on:
+  workflow_dispatch:
+    inputs:
+      migration_mode:
+        description: "Run the migration as a rollback-only dry run or apply it to the disposable branch"
+        required: true
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - apply
+      confirm_apply:
+        description: "Required confirmation when applying to the disposable readiness branch"
+        required: true
+        default: false
+        type: boolean
+      origin_inventory:
+        description: "Resultado do inventario da origem antes do readiness remoto"
+        required: true
+        default: unknown
+        type: choice
+        options:
+          - unknown
+          - no-legacy-source
+          - legacy-source-read-only
+      authorize_legacy_migration:
+        description: "Authorize legacy rehearsal on the disposable branch only"
+        required: true
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: neon-readiness-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  readiness:
+    name: Neon readiness / ${{ inputs.migration_mode }}
+    # Configure this environment with required reviewers before treating the
+    # job as a protected gate. It must not contain production credentials.
+    environment:
+      name: neon-readiness
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      EXPECTED_POSTGRES_MAJOR: "17"
+
+    steps:
+      - name: Require develop ref
+        env:
+          GITHUB_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF" != "refs/heads/develop" ]]; then
+            echo "Neon readiness blocked: run only from refs/heads/develop." >&2
+            exit 1
+          fi
+
+      - name: Require readiness credentials and confirmation
+        id: config
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          SUPABASE_MIGRATION_DATABASE_URL: ${{ secrets.SUPABASE_MIGRATION_DATABASE_URL }}
+          MIGRATION_MODE: ${{ inputs.migration_mode }}
+          CONFIRM_APPLY: ${{ inputs.confirm_apply }}
+          ORIGIN_INVENTORY: ${{ inputs.origin_inventory }}
+          AUTHORIZE_LEGACY_MIGRATION: ${{ inputs.authorize_legacy_migration }}
+        run: |
+          set -euo pipefail
+
+          missing=()
+          [[ -n "$NEON_API_KEY" ]] || missing+=(NEON_API_KEY)
+          [[ -n "$NEON_PROJECT_ID" ]] || missing+=(NEON_PROJECT_ID)
+
+          if ((${#missing[@]} > 0)); then
+            printf 'Neon readiness blocked: missing required configuration: %s\n' "${missing[*]}" >&2
+            exit 1
+          fi
+
+          case "$ORIGIN_INVENTORY" in
+            unknown)
+              echo "Neon readiness blocked: complete the origin inventory before selecting fresh-provision or legacy migration." >&2
+              exit 1
+              ;;
+            no-legacy-source)
+              if [[ -n "$SUPABASE_MIGRATION_DATABASE_URL" ]]; then
+                echo "Neon readiness blocked: a legacy source was supplied for a no-legacy-source inventory." >&2
+                exit 1
+              fi
+              legacy_source=false
+              ;;
+            legacy-source-read-only)
+              [[ -n "$SUPABASE_MIGRATION_DATABASE_URL" ]] || {
+                echo "Neon readiness blocked: the read-only legacy source is required by the inventory result." >&2
+                exit 1
+              }
+              if [[ "$AUTHORIZE_LEGACY_MIGRATION" != "true" ]]; then
+                echo "Neon readiness blocked: legacy rehearsal requires authorize_legacy_migration=true." >&2
+                exit 1
+              fi
+              legacy_source=true
+              ;;
+            *)
+              echo "Neon readiness blocked: unsupported origin inventory state." >&2
+              exit 1
+              ;;
+          esac
+
+          case "$MIGRATION_MODE" in
+            dry-run)
+              migration_apply=false
+              ;;
+            apply)
+              if [[ "$CONFIRM_APPLY" != "true" ]]; then
+                echo "Neon readiness blocked: apply requires confirm_apply=true." >&2
+                exit 1
+              fi
+              migration_apply=true
+              ;;
+            *)
+              echo "Neon readiness blocked: unsupported migration mode." >&2
+              exit 1
+              ;;
+          esac
+
+          report_path="$GITHUB_WORKSPACE/.artifacts/neon-readiness/migration-report.json"
+          {
+            echo "migration_apply=$migration_apply"
+            echo "report_path=$report_path"
+            echo "legacy_source=$legacy_source"
+            echo "origin_inventory=$ORIGIN_INVENTORY"
+            echo "legacy_authorized=$AUTHORIZE_LEGACY_MIGRATION"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Pin npm used by the readiness runner
+        run: npm install --global --ignore-scripts npm@11.14.1
+
+      - name: Install dependencies without lifecycle scripts
+        run: npm ci --ignore-scripts
+
+      - name: Create disposable Neon readiness branch
+        id: neon
+        uses: neondatabase/create-branch-action@fb620d43d4c565abaf088b848a4e28e5c4ea4d9c # 6.3.1
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          # The readiness branch is always a disposable child of develop.
+          # Production is never a readiness target.
+          parent_branch: develop
+          branch_name: readiness/develop-${{ github.run_id }}
+          database: ${{ vars.NEON_DATABASE || 'neondb' }}
+          role: ${{ vars.NEON_ADMIN_ROLE || 'neondb_owner' }}
+
+      - name: Prove direct and pooled connection URLs
+        env:
+          DATABASE_ADMIN_URL: ${{ steps.neon.outputs.db_url }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+          EVIDENCE_PATH: ${{ github.workspace }}/.artifacts/neon-readiness/connection-contract.json
+          EXPECTED_POSTGRES_MAJOR: "17"
+        run: |
+          set -euo pipefail
+          [[ -n "$DATABASE_ADMIN_URL" ]] || { echo "Neon readiness blocked: direct URL was not returned." >&2; exit 1; }
+          [[ -n "$DATABASE_URL" ]] || { echo "Neon readiness blocked: pooled URL was not returned." >&2; exit 1; }
+          [[ "$DATABASE_ADMIN_URL" != "$DATABASE_URL" ]] || {
+            echo "Neon readiness blocked: direct and pooled URLs are not separated." >&2
+            exit 1
+          }
+
+          echo "::add-mask::$DATABASE_ADMIN_URL"
+          echo "::add-mask::$DATABASE_URL"
+          mkdir -p "$(dirname "$EVIDENCE_PATH")"
+          chmod 700 "$(dirname "$EVIDENCE_PATH")"
+
+          node --input-type=module <<'NODE'
+          import { writeFile } from "node:fs/promises";
+          import { Client } from "pg";
+
+          const directUrl = new URL(process.env.DATABASE_ADMIN_URL);
+          const pooledUrl = new URL(process.env.DATABASE_URL);
+          if (directUrl.hostname === pooledUrl.hostname) {
+            throw new Error("direct and pooled endpoints must use distinct hosts");
+          }
+
+          const isNeonHostname = (hostname) =>
+            hostname.endsWith(".neon.tech") || hostname.endsWith(".aws.neon.tech");
+          if (isNeonHostname(directUrl.hostname) && directUrl.hostname.includes("-pooler")) {
+            throw new Error("DATABASE_ADMIN_URL must use the direct Neon endpoint");
+          }
+          if (isNeonHostname(pooledUrl.hostname) && !pooledUrl.hostname.includes("-pooler")) {
+            throw new Error("DATABASE_URL must use the pooled Neon endpoint");
+          }
+
+          const expectedMajor = Number(process.env.EXPECTED_POSTGRES_MAJOR);
+          const connections = [
+            ["direct", process.env.DATABASE_ADMIN_URL],
+            ["pooled", process.env.DATABASE_URL],
+          ];
+          const evidence = {
+            generatedAt: new Date().toISOString(),
+            direct: { connected: false },
+            pooled: { connected: false },
+          };
+
+          for (const [kind, connectionString] of connections) {
+            const url = new URL(connectionString);
+            const client = new Client({ connectionString });
+            try {
+              await client.connect();
+              const result = await client.query(
+                "select current_database() as database, current_user as user, current_setting('server_version_num')::int as version_num",
+              );
+              const postgresMajor = Math.floor(Number(result.rows[0]?.version_num) / 10000);
+              if (postgresMajor !== expectedMajor) {
+                throw new Error(`${kind} connection returned PostgreSQL ${postgresMajor}; expected ${expectedMajor}`);
+              }
+              evidence[kind] = {
+                connected: true,
+                host: url.hostname,
+                database: result.rows[0]?.database ?? null,
+                user: result.rows[0]?.user ?? null,
+                postgresMajor,
+              };
+              console.log(`${kind}: connected on PostgreSQL ${postgresMajor}`);
+            } finally {
+              await client.end();
+            }
+          }
+
+          await writeFile(
+            process.env.EVIDENCE_PATH,
+            `${JSON.stringify(evidence, null, 2)}\n`,
+            { mode: 0o600 },
+          );
+          NODE
+
+      - name: Validate migrations, runtime privileges and RLS
+        env:
+          DATABASE_ADMIN_URL: ${{ steps.neon.outputs.db_url }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+        run: npm run db:test
+
+      - name: Validate migration drift
+        env:
+          DATABASE_ADMIN_URL: ${{ steps.neon.outputs.db_url }}
+        run: npm run db:check
+
+      - name: Run controlled Supabase to Neon migration
+        if: steps.config.outputs.legacy_source == 'true' && steps.config.outputs.legacy_authorized == 'true'
+        env:
+          DATABASE_ADMIN_URL: ${{ steps.neon.outputs.db_url }}
+          DATABASE_URL: ${{ steps.neon.outputs.db_url_pooled }}
+          SUPABASE_MIGRATION_DATABASE_URL: ${{ secrets.SUPABASE_MIGRATION_DATABASE_URL }}
+          MIGRATION_APPLY: ${{ steps.config.outputs.migration_apply }}
+          MIGRATION_ALLOW_UPSERT: "false"
+          MIGRATION_REPORT_PATH: ${{ steps.config.outputs.report_path }}
+        run: npm run migration:legacy-to-neon
+
+      - name: Enforce migration report contract
+        if: steps.config.outputs.legacy_source == 'true' && steps.config.outputs.legacy_authorized == 'true'
+        env:
+          MIGRATION_REPORT_PATH: ${{ steps.config.outputs.report_path }}
+          MIGRATION_MODE: ${{ inputs.migration_mode }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFile } from "node:fs/promises";
+
+          const report = JSON.parse(await readFile(process.env.MIGRATION_REPORT_PATH, "utf8"));
+          const failures = [];
+          if (report.sourceMode !== "read-only-repeatable-read") {
+            failures.push("source is not marked read-only-repeatable-read");
+          }
+          if (report.sessionsImported !== 0) {
+            failures.push(`sessionsImported=${report.sessionsImported}`);
+          }
+          if (report.totals?.different !== 0) {
+            failures.push(`different=${report.totals?.different ?? "missing"}`);
+          }
+          const orphanTables = (report.tables ?? []).filter(
+            (table) => table.sourceOrphans !== 0 || table.targetOrphans !== 0,
+          );
+          if (orphanTables.length > 0) {
+            failures.push(`orphaned tables=${orphanTables.map((table) => table.table).join(",")}`);
+          }
+          const expectedApplied = process.env.MIGRATION_MODE === "apply";
+          if (report.applied !== expectedApplied) {
+            failures.push(`applied=${report.applied} expected=${expectedApplied}`);
+          }
+          if (failures.length > 0) {
+            console.error(`Neon readiness report rejected: ${failures.join("; ")}`);
+            process.exit(1);
+          }
+          console.log(
+            `Neon readiness report accepted: tables=${report.totals.matching}, different=0, sessionsImported=0`,
+          );
+          NODE
+
+      - name: Write readiness boundary to job summary
+        if: always()
+        env:
+          BRANCH_ID: ${{ steps.neon.outputs.branch_id }}
+          MIGRATION_MODE: ${{ inputs.migration_mode }}
+          LEGACY_SOURCE: ${{ steps.config.outputs.legacy_source }}
+          ORIGIN_INVENTORY: ${{ steps.config.outputs.origin_inventory }}
+          LEGACY_AUTHORIZED: ${{ steps.config.outputs.legacy_authorized }}
+        run: |
+          {
+            echo "### Neon readiness boundary"
+            echo
+            echo "- Mode: \`$MIGRATION_MODE\`"
+            echo "- Origin inventory: \`$ORIGIN_INVENTORY\`"
+            echo "- Target: disposable child of Neon develop (production excluded)"
+            if [[ "$LEGACY_SOURCE" == "true" ]]; then
+              echo "- Legacy rehearsal: authorized and limited to the read-only source on this disposable branch"
+            else
+              echo "- Legacy rehearsal: skipped; fresh-provision schema checks only on this disposable branch"
+            fi
+            echo "- Production mutation/cutover: **not performed**"
+            echo "- Branch cleanup: requested in the final step, including failures"
+            if [[ -n "$BRANCH_ID" ]]; then
+              echo "- Neon branch was created for this run; its identifier is retained in the private job log."
+            else
+              echo "- Neon branch: not created (configuration or provisioning failed before creation)."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload protected readiness evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: neon-readiness-${{ github.run_id }}
+          path: .artifacts/neon-readiness
+          if-no-files-found: error
+          include-hidden-files: true
+          retention-days: 7
+
+      - name: Delete disposable Neon readiness branch
+        if: always() && steps.neon.outputs.branch_id != ''
+        uses: neondatabase/delete-branch-action@4468d825d5a88ef4012f1705a82f02ec3072f776 # v3.2.1
+        with:
+          project_id: ${{ vars.NEON_PROJECT_ID }}
+          api_key: ${{ secrets.NEON_API_KEY }}
+          branch: ${{ steps.neon.outputs.branch_id }}

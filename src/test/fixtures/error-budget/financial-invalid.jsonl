@@ -1,0 +1,4 @@
+{"timestamp":"2026-09-13T12:00:00.000Z","level":"info","event":"request.completed","correlationId":"c-1","method":"GET","pathname":"/inicio","status":200,"durationMs":40}
+{"timestamp":"2026-09-13T11:59:00.000Z","level":"error","event":"request.failed","correlationId":"c-2","code":"INTERNAL_ERROR","method":"GET","pathname":"/inicio","durationMs":55}
+{"timestamp":"2026-09-13T11:58:00.000Z","level":"info","event":"app.financial.states","state":"invalid","pathname":"/api/erp/products"}
+{"timestamp":"2026-09-13T11:57:00.000Z","level":"info","event":"request.completed","correlationId":"c-3","method":"GET","pathname":"/inicio","status":200,"durationMs":41}

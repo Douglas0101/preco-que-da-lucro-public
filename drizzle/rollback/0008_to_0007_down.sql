@@ -1,0 +1,16 @@
+ALTER TABLE "ai_daily_budgets" DROP CONSTRAINT "ai_daily_budgets_nonnegative_check";
+ALTER TABLE "ai_daily_budgets" DROP COLUMN "estimated_cost_unknown_count";
+ALTER TABLE "ai_daily_budgets" ADD CONSTRAINT "ai_daily_budgets_nonnegative_check" CHECK ("ai_daily_budgets"."chat_count" >= 0 and "ai_daily_budgets"."model_call_count" >= 0 and "ai_daily_budgets"."tool_call_count" >= 0 and "ai_daily_budgets"."input_tokens" >= 0 and "ai_daily_budgets"."output_tokens" >= 0 and "ai_daily_budgets"."tokens_reserved" >= 0 and "ai_daily_budgets"."in_flight" >= 0 and "ai_daily_budgets"."estimated_cost" >= 0);
+ALTER TABLE "ai_usage" DROP CONSTRAINT "ai_usage_cost_status_check";
+ALTER TABLE "ai_usage" DROP COLUMN "estimated_cost";
+ALTER TABLE "ai_usage" DROP COLUMN "cost_status";
+ALTER TABLE "tool_executions" DROP CONSTRAINT "tool_executions_cost_status_check";
+ALTER TABLE "tool_executions" DROP COLUMN "estimated_cost";
+ALTER TABLE "tool_executions" DROP COLUMN "cost_status";
+ALTER TABLE "chat_conversations" DROP CONSTRAINT "chat_conversations_state_check";
+ALTER TABLE "chat_conversations" DROP COLUMN "conversation_state";
+ALTER TABLE "chat_conversations" DROP COLUMN "state_updated_at";
+ALTER TABLE "chat_conversations" DROP COLUMN "state_metadata";
+DROP INDEX IF EXISTS "calculation_snapshots_idempotency_uidx";
+ALTER TABLE "calculation_snapshots" DROP COLUMN "idempotency_key";
+ALTER TABLE "calculation_snapshots" ALTER COLUMN "entity_id" SET NOT NULL;

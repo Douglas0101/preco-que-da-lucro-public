@@ -1,0 +1,114 @@
+name: CI light (docs/evidence)
+
+# Light pipeline for docs/evidence-only changes (approved path filter).
+# docs/evidence/** -> light (lockfile guard, secrets audit, prettier on the
+# changed files); anything else -> the heavy "UI stack" pipeline.
+# See AGENTS.md § Local quality gate.
+
+on:
+  push:
+    paths:
+      - "docs/evidence/**"
+  pull_request:
+    paths:
+      - "docs/evidence/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-light-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  docs-light:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # actions/checkout v7.0.1
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          # Full history so the changed-file diff below always resolves.
+          fetch-depth: 0
+      # actions/setup-node v7.0.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        with:
+          node-version-file: .nvmrc
+
+      # Scope guard: this pipeline owns the run only when EVERY changed file
+      # lives under docs/evidence/. Mixed pushes (code + docs) belong to the
+      # heavy pipeline, so the guard succeeds without work instead of failing.
+      - name: Scope guard (docs/evidence only)
+        id: scope
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            base="${{ github.event.pull_request.base.sha }}"
+          else
+            base="${{ github.event.before }}"
+          fi
+          zero="0000000000000000000000000000000000000000"
+          if [ -z "${base}" ] || [ "${base}" = "${zero}" ]; then
+            base="$(git rev-parse HEAD~1 2>/dev/null || git rev-parse HEAD)"
+          fi
+          git diff --name-only "${base}" HEAD > /tmp/changed.txt || true
+          if [ ! -s /tmp/changed.txt ]; then
+            echo "no changed files detected — nothing to do"
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if grep -qv '^docs/evidence/' /tmp/changed.txt; then
+            echo "changed paths outside docs/evidence/ — heavy pipeline owns it"
+            cat /tmp/changed.txt
+            echo "applicable=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          grep '^docs/evidence/' /tmp/changed.txt > /tmp/docs.txt || true
+          echo "applicable=true" >> "$GITHUB_OUTPUT"
+          echo "docs changed: $(wc -l < /tmp/docs.txt)"
+
+      # No install step on purpose: the scripts below import node built-ins
+      # only, so plain `node` runs them (type stripping covers the .ts entry).
+      # Evidence: docs/evidence/ci-path-filter-2026-09-13.md § verification.
+      - name: Lockfile guard (fail-closed)
+        if: steps.scope.outputs.applicable == 'true'
+        run: node scripts/m02-lockfile-guard.mjs
+
+      - name: Work-package contract guard (fail-closed)
+        if: steps.scope.outputs.applicable == 'true'
+        run: node scripts/m02-work-package-guard.mjs
+
+      - name: Debt registry guard (fail-closed)
+        if: steps.scope.outputs.applicable == 'true'
+        run: node scripts/m02-debts-guard.mjs
+
+      - name: Temporal guard (pins and deadlines in live prose)
+        run: node scripts/m02-temporal-guard.mjs
+
+      - name: Secrets audit (read-only)
+        if: steps.scope.outputs.applicable == 'true'
+        run: node scripts/m02-secrets-audit.ts
+
+      - name: Prettier check (changed docs/evidence files only)
+        if: steps.scope.outputs.applicable == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t files < <(grep -E '\.(md|json|ya?ml)$' /tmp/docs.txt)
+          if [ "${#files[@]}" -eq 0 ]; then
+            echo "no pretty-printable files changed"
+            exit 0
+          fi
+          # Formatter resolved from the lockfile, not from the package.json
+          # range: `npm ci` (the heavy pipeline and every developer) installs
+          # the locked version, and a caret range such as `^3.7.3` resolves to
+          # a different release than the one the gate actually runs. Reading the
+          # range here made the light pipeline drift away from
+          # `npm run format:check` and fail docs-only pushes whose files the
+          # repo's own gate accepts (markdown table spacing changed in 3.9).
+          version="$(
+            node -p "require('./package-lock.json').packages['node_modules/prettier'].version"
+          )"
+          printf 'prettier@%s on %s file(s)\n' "${version}" "${#files[@]}"
+          npx --yes "prettier@${version}" --check "${files[@]}"

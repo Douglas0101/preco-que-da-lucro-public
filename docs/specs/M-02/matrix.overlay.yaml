@@ -1,0 +1,321 @@
+{
+  "schemaVersion": 1,
+  "status": "DRAFT",
+  "format": "JSON subset of YAML 1.2",
+  "authority": "docs/specs/M-02/spec.md",
+  "catalog": {
+    "services": {
+      "ProductService": {
+        "status": "implemented",
+        "path": "src/server/services/product.service.ts"
+      },
+      "PricingService": {
+        "status": "implemented",
+        "path": "src/server/services/pricing.service.ts"
+      },
+      "ExpenseService": {
+        "status": "implemented",
+        "path": "src/server/services/expense.service.ts"
+      },
+      "SalesService": { "status": "implemented", "path": "src/server/services/sales.service.ts" },
+      "SimulationService": {
+        "status": "implemented",
+        "path": "src/server/services/simulation.service.ts"
+      },
+      "DiagnosticService": {
+        "status": "implemented",
+        "path": "src/server/services/diagnostic.service.ts"
+      },
+      "ConversationService": {
+        "status": "implemented",
+        "path": "src/server/services/conversation.service.ts"
+      },
+      "MemoryService": {
+        "status": "implemented",
+        "path": "src/server/services/memory.service.ts"
+      },
+      "AuditService": {
+        "status": "implemented",
+        "path": "src/server/services/audit.service.ts"
+      },
+      "EventService": {
+        "status": "implemented",
+        "path": "src/server/services/event.service.ts"
+      }
+    },
+    "repositories": {
+      "ProductRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/product.repository.ts"
+      },
+      "IngredientRepository": {
+        "status": "consolidated",
+        "path": "src/server/repositories/product.repository.ts"
+      },
+      "PackagingRepository": {
+        "status": "consolidated",
+        "path": "src/server/repositories/product.repository.ts"
+      },
+      "PriceRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/purchase-price.repository.ts"
+      },
+      "MarketPriceRepository": {
+        "status": "consolidated",
+        "path": "src/server/repositories/product.repository.ts"
+      },
+      "ExpenseRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/expense.repository.ts"
+      },
+      "SalesRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/sales.repository.ts"
+      },
+      "SimulationRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/simulation.repository.ts"
+      },
+      "DashboardRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/dashboard.repository.ts"
+      },
+      "ConversationRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/conversation.repository.ts"
+      },
+      "MemoryRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/memory.repository.ts"
+      },
+      "CalculationSnapshotRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/calculation-snapshot.repository.ts"
+      },
+      "AuditRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/audit.repository.ts"
+      },
+      "EventRepository": {
+        "status": "implemented",
+        "path": "src/server/repositories/outbox.repository.ts"
+      }
+    }
+  },
+  "exceptions": [
+    {
+      "id": "health",
+      "pathPrefix": "src/routes/api/health/",
+      "reason": "probe operacional sem domínio"
+    },
+    {
+      "id": "auth",
+      "pathPrefix": "src/middleware/request-context.ts",
+      "reason": "resolução de identidade e membership"
+    },
+    {
+      "id": "auth-rate-limit",
+      "pathPrefix": "src/server/auth/",
+      "reason": "persistência de autenticação e rate limit"
+    },
+    { "id": "infra", "pathPrefix": "src/db/", "reason": "cliente e schema de persistência" },
+    {
+      "id": "infra-scripts",
+      "pathPrefix": "scripts/",
+      "reason": "tooling e migrations operacionais"
+    },
+    { "id": "infra-migration", "pathPrefix": ".migration/", "reason": "artefatos de migration" },
+    {
+      "id": "transient-ai-modules",
+      "pathPrefix": "src/lib/ai/",
+      "reason": "TRANSITÓRIO (2026-09-05): budget-ledger é a arquitetura de referência H-001; unidades transacionais em transactionPolicies; migração ao catálogo-alvo permanece backlog M02-3/M-04"
+    },
+    {
+      "id": "transient-chat-execution",
+      "pathPrefix": "src/lib/chat-execution.server.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): unidades compostas de sendChatMessage (ADR-026); alvo M02-3"
+    },
+    {
+      "id": "transient-bff-chat-self",
+      "pathPrefix": "src/lib/chat.functions.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): histórico de conversa na tenant tx; alvo M02-3"
+    },
+    {
+      "id": "transient-bff-products-self",
+      "pathPrefix": "src/lib/products.functions.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): read-model UNION na tenant tx (wave PERF, patch pós-S4); alvo M02-2"
+    },
+    {
+      "id": "transient-bff-expenses-self",
+      "pathPrefix": "src/lib/expenses.functions.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): consulta de despesas shipada; alvo M02-4"
+    },
+    {
+      "id": "transient-service-purchase-price",
+      "pathPrefix": "src/server/services/purchase-price.service.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): service executa queries na tenant transaction (padrão WS-01..07); alvo M02-2"
+    },
+    {
+      "id": "transient-service-product-detail",
+      "pathPrefix": "src/server/services/product-detail.service.ts",
+      "reason": "TRANSITÓRIO (2026-09-05): service executa queries na tenant transaction (padrão WS-01..07); alvo M02-4"
+    }
+  ],
+  "entryPolicies": {
+    "src/lib/products.functions.ts": {
+      "service": "ProductService/PricingService",
+      "repository": "ProductRepository + child repositories",
+      "targetPhase": "M02-2"
+    },
+    "src/lib/chat.functions.ts": {
+      "service": "ConversationService",
+      "repository": "ConversationRepository",
+      "targetPhase": "M02-3"
+    },
+    "src/lib/expenses.functions.ts": {
+      "service": "ExpenseService",
+      "repository": "ExpenseRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/financial.functions.ts": {
+      "service": "SimulationService",
+      "repository": "SimulationRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/dashboard.functions.ts": {
+      "service": "DashboardService",
+      "repository": "DashboardRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/diagnostic.functions.ts": {
+      "service": "DiagnosticService/PricingService",
+      "repository": "ProductReadRepository + ExpenseRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/price-formation.functions.ts": {
+      "service": "PricingService",
+      "repository": null,
+      "targetPhase": "M02-4"
+    },
+    "src/lib/break-even.functions.ts": {
+      "service": "BreakEvenService",
+      "repository": null,
+      "targetPhase": "M02-4"
+    },
+    "src/lib/sales.functions.ts": {
+      "service": "SalesService",
+      "repository": "SalesRepository",
+      "targetPhase": "M02-4"
+    }
+  },
+  "operationPolicies": {
+    "src/lib/products.functions.ts": {
+      "listProducts": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "listProductsWithMetrics": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "getProduct": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "upsertProduct": { "service": "ProductService", "repository": "ProductRepository" },
+      "createProduct": { "service": "ProductService", "repository": "ProductRepository" },
+      "updateProduct": { "service": "ProductService", "repository": "ProductRepository" },
+      "archiveProduct": { "service": "ProductService", "repository": "ProductRepository" },
+      "deleteProduct": { "service": "ProductService", "repository": "ProductRepository" },
+      "upsertIngredient": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "deleteIngredient": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "upsertPackaging": { "service": "ProductService/PricingService", "repository": "ProductCatalogRepository + PriceRepository" },
+      "deletePackaging": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "upsertFee": { "service": "PricingService", "repository": "ProductCatalogRepository" },
+      "deleteFee": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "setMarketPrice": { "service": "PricingService", "repository": "MarketPriceRepository" },
+      "getProductMetrics": { "service": "ProductService", "repository": "ProductCatalogRepository" },
+      "listPurchasePrices": { "service": "PricingService", "repository": "ProductCatalogRepository" },
+      "updatePurchasePrice": { "service": "PricingService", "repository": "PriceRepository" }
+    },
+    "src/lib/expenses.functions.ts": {
+      "listExpenses": { "service": "ExpenseService", "repository": "ExpenseRepository" },
+      "createExpense": { "service": "ExpenseService", "repository": "ExpenseRepository" },
+      "updateExpense": { "service": "ExpenseService", "repository": "ExpenseRepository" },
+      "upsertExpense": { "service": "ExpenseService", "repository": "ExpenseRepository" },
+      "deleteExpense": { "service": "ExpenseService", "repository": "ExpenseRepository" },
+      "getTotals": { "service": "ExpenseService", "repository": "ExpenseRepository" }
+    },
+    "src/lib/chat.functions.ts": {
+      "getChatHistory": {
+        "service": "ConversationService",
+        "repository": "ConversationRepository",
+        "atomicity": "per-conversation-operation"
+      },
+      "createChatConversation": {
+        "service": "ConversationService",
+        "repository": "ConversationRepository",
+        "atomicity": "per-conversation-operation"
+      },
+      "clearChatHistory": {
+        "service": "ConversationService",
+        "repository": "ConversationRepository",
+        "atomicity": "per-conversation-operation"
+      },
+      "sendChatMessage": {
+        "service": "ConversationService/ChatExecution",
+        "repository": "ConversationRepository + BudgetRepository + AiToolRepository + AuditRepository",
+        "atomicity": "composed"
+      }
+    },
+    "src/lib/sales.functions.ts": {
+      "createSale": {
+        "service": "SalesService",
+        "repository": "SalesRepository",
+        "atomicity": "per-operation"
+      },
+      "listSales": {
+        "service": "SalesService",
+        "repository": "SalesRepository",
+        "atomicity": "per-operation"
+      }
+    }
+  },
+  "transactionPolicies": {
+    "src/lib/products.functions.ts": { "atomicity": "per-operation", "targetPhase": "M02-2" },
+    "src/lib/chat.functions.ts": {
+      "atomicity": "composed",
+      "targetPhase": "M02-3",
+      "units": [
+        {
+          "id": "chat-reservation-history",
+          "boundary": "tenant-transaction",
+          "evidence": "src/lib/chat-execution.server.ts:93-128"
+        },
+        {
+          "id": "model-round-reserve",
+          "boundary": "per-round-reservation",
+          "idempotencyKey": "usageId",
+          "evidence": "src/lib/chat-execution.server.ts:210-245"
+        },
+        {
+          "id": "model-round-settle",
+          "boundary": "per-round-settlement",
+          "idempotencyKey": "usageId",
+          "evidence": "src/lib/chat-execution.server.ts:246-279"
+        },
+        {
+          "id": "budget-sweep",
+          "boundary": "budget-transaction",
+          "evidence": "src/server/repositories/budget.repository.ts:64-114"
+        },
+        {
+          "id": "tool-execution-replay",
+          "boundary": "per-tool-call",
+          "idempotencyKey": "${conversationId}:${toolCall.id}",
+          "evidence": "src/lib/ai/tool-runner.ts:125-219"
+        },
+        {
+          "id": "audit-append",
+          "boundary": "per-tool-execution",
+          "evidence": "src/server/repositories/audit.repository.ts:1-120"
+        }
+      ]
+    },
+    "src/lib/chat-execution.server.ts": {
+      "atomicity": "per-settlement-step",
+      "targetPhase": "M02-3"
+    }
+  }
+}

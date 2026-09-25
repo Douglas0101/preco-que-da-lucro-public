@@ -1,0 +1,1840 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "root": "src",
+    "graph": "typescript-compiler-api",
+    "deterministic": true
+  },
+  "counts": {
+    "bffModules": 8,
+    "createServerFnDeclarations": 35,
+    "concreteOperations": 36,
+    "apiRoutes": 5,
+    "transactionSites": 113,
+    "directDatabaseFiles": 49
+  },
+  "bffs": [
+    {
+      "path": "src/lib/break-even.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "calculateBreakEven",
+          "line": 28,
+          "declaration": "createServerFn",
+          "service": "BreakEvenService",
+          "repository": null,
+          "atomicity": "per-request"
+        }
+      ],
+      "imports": [
+        "@/instrumentation/telemetry",
+        "@/lib/financial-values",
+        "@/lib/structured-logger",
+        "@/middleware/request-context",
+        "@/server/services/break-even.service",
+        "@/server/services/calculation-snapshot.service",
+        "@/server/services/financial.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/calculation-snapshot.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/chat.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "getChatHistory",
+          "line": 268,
+          "declaration": "createServerFn",
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        {
+          "name": "createChatConversation",
+          "line": 313,
+          "declaration": "createServerFn",
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        {
+          "name": "clearChatHistory",
+          "line": 325,
+          "declaration": "createServerFn",
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        {
+          "name": "sendChatMessage",
+          "line": 343,
+          "declaration": "createServerFn",
+          "service": "ConversationService/ChatExecution",
+          "repository": "ConversationRepository + BudgetRepository + AiToolRepository + AuditRepository",
+          "atomicity": "composed"
+        }
+      ],
+      "imports": [
+        "@/db/client.server",
+        "@/instrumentation/safe-record",
+        "@/instrumentation/telemetry",
+        "@/lib/ai-endpoint.server",
+        "@/lib/ai/tool-registry",
+        "@/lib/api-error",
+        "@/lib/chat-execution.server",
+        "@/lib/structured-logger",
+        "@/lib/tenant-transaction",
+        "@/middleware/request-context",
+        "@/server/services/conversation.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/lib/ai/budget-ledger.server.ts",
+        "src/lib/ai/tool-registry.ts",
+        "src/lib/ai/tool-runner.ts",
+        "src/lib/chat-execution.server.ts",
+        "src/lib/chat.functions.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/audit.repository.ts",
+        "src/server/repositories/conversation.repository.ts",
+        "src/server/repositories/product.repository.ts",
+        "src/server/repositories/purchase-price.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/dashboard.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "getDashboardSummary",
+          "line": 18,
+          "declaration": "createServerFn",
+          "service": "DashboardService",
+          "repository": "DashboardRepository",
+          "atomicity": "per-request"
+        }
+      ],
+      "imports": [
+        "@/middleware/request-context",
+        "@/server/services/dashboard.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/dashboard.repository.ts",
+        "src/server/repositories/sales.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/diagnostic.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "getDiagnostic",
+          "line": 19,
+          "declaration": "createServerFn",
+          "service": "DiagnosticService/PricingService",
+          "repository": "ProductReadRepository + ExpenseRepository",
+          "atomicity": "per-request"
+        }
+      ],
+      "imports": [
+        "@/lib/financial-values",
+        "@/middleware/request-context",
+        "@/server/services/diagnostic.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/calculation-snapshot.repository.ts",
+        "src/server/repositories/expense.repository.ts",
+        "src/server/repositories/outbox.repository.ts",
+        "src/server/repositories/product.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/expenses.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "listExpenses",
+          "line": 71,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "createExpense",
+          "line": 106,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "updateExpense",
+          "line": 111,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "upsertExpense",
+          "line": 117,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "deleteExpense",
+          "line": 126,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "getTotals",
+          "line": 135,
+          "declaration": "createServerFn",
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository",
+          "atomicity": "per-request"
+        }
+      ],
+      "imports": [
+        "@/db/schema",
+        "@/lib/financial-values",
+        "@/lib/optimistic-version",
+        "@/lib/request-context",
+        "@/middleware/request-context",
+        "@/server/services/expense.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/lib/expenses.functions.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/expense.repository.ts",
+        "src/server/repositories/outbox.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/financial.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "runSimulation",
+          "line": 19,
+          "declaration": "createServerFn",
+          "service": "SimulationService",
+          "repository": "SimulationRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "listSimulations",
+          "line": 47,
+          "declaration": "createServerFn",
+          "service": "SimulationService",
+          "repository": "SimulationRepository",
+          "atomicity": "per-request"
+        },
+        {
+          "name": "saveSimulation",
+          "line": 54,
+          "declaration": "createServerFn",
+          "service": "SimulationService",
+          "repository": "SimulationRepository",
+          "atomicity": "per-request"
+        }
+      ],
+      "imports": [
+        "@/middleware/request-context",
+        "@/server/services/financial.service",
+        "@/server/services/simulation.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/calculation-snapshot.repository.ts",
+        "src/server/repositories/simulation.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/products.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "listProducts",
+          "line": 339,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "listProductsWithMetrics",
+          "line": 347,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "getProduct",
+          "line": 353,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "createProduct",
+          "line": 444,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "updateProduct",
+          "line": 449,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "upsertProduct",
+          "line": 455,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "archiveProduct",
+          "line": 464,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "deleteProduct",
+          "line": 474,
+          "declaration": "alias",
+          "service": "ProductService",
+          "repository": "ProductRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "upsertIngredient",
+          "line": 507,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "deleteIngredient",
+          "line": 568,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "upsertPackaging",
+          "line": 583,
+          "declaration": "createServerFn",
+          "service": "ProductService/PricingService",
+          "repository": "ProductCatalogRepository + PriceRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "deletePackaging",
+          "line": 608,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "upsertFee",
+          "line": 622,
+          "declaration": "createServerFn",
+          "service": "PricingService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "deleteFee",
+          "line": 636,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "setMarketPrice",
+          "line": 648,
+          "declaration": "createServerFn",
+          "service": "PricingService",
+          "repository": "MarketPriceRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "getProductMetrics",
+          "line": 662,
+          "declaration": "createServerFn",
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "listPurchasePrices",
+          "line": 674,
+          "declaration": "createServerFn",
+          "service": "PricingService",
+          "repository": "ProductCatalogRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "updatePurchasePrice",
+          "line": 685,
+          "declaration": "createServerFn",
+          "service": "PricingService",
+          "repository": "PriceRepository",
+          "atomicity": "per-operation"
+        }
+      ],
+      "imports": [
+        "@/lib/api-error",
+        "@/lib/finance",
+        "@/lib/financial-values",
+        "@/lib/optimistic-version",
+        "@/lib/request-context",
+        "@/middleware/request-context",
+        "@/server/contracts/product.contracts",
+        "@/server/services/product-read-model.service",
+        "@/server/services/product.service",
+        "@/server/services/purchase-price.service",
+        "@tanstack/react-start",
+        "decimal.js",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/product.repository.ts",
+        "src/server/repositories/purchase-price.repository.ts"
+      ]
+    },
+    {
+      "path": "src/lib/sales.functions.ts",
+      "kind": "server-function",
+      "operations": [
+        {
+          "name": "createSale",
+          "line": 56,
+          "declaration": "createServerFn",
+          "service": "SalesService",
+          "repository": "SalesRepository",
+          "atomicity": "per-operation"
+        },
+        {
+          "name": "listSales",
+          "line": 92,
+          "declaration": "createServerFn",
+          "service": "SalesService",
+          "repository": "SalesRepository",
+          "atomicity": "per-operation"
+        }
+      ],
+      "imports": [
+        "@/instrumentation/telemetry",
+        "@/lib/api-error",
+        "@/lib/financial-values",
+        "@/middleware/request-context",
+        "@/server/services/sales.service",
+        "@tanstack/react-start",
+        "zod"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/middleware/request-context.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts",
+        "src/server/repositories/sales.repository.ts"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "path": "src/routes/api/auth/$.ts",
+      "kind": "route",
+      "operations": [],
+      "imports": [
+        "@/server/auth/auth.server",
+        "@tanstack/react-router"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/server/auth/auth.server.ts",
+        "src/server/auth/rate-limit-storage.server.ts",
+        "src/server/auth/tenant-bootstrap.server.ts"
+      ]
+    },
+    {
+      "path": "src/routes/api/csp-report.ts",
+      "kind": "route",
+      "operations": [],
+      "imports": [
+        "@/lib/csp-report-payload",
+        "@/lib/structured-logger",
+        "@tanstack/react-router"
+      ],
+      "reachesDatabase": false,
+      "databasePaths": []
+    },
+    {
+      "path": "src/routes/api/health/live.ts",
+      "kind": "route",
+      "operations": [],
+      "imports": [
+        "@tanstack/react-router"
+      ],
+      "reachesDatabase": false,
+      "databasePaths": []
+    },
+    {
+      "path": "src/routes/api/health/ready.ts",
+      "kind": "route",
+      "operations": [],
+      "imports": [
+        "@/db/client.server",
+        "@/lib/structured-logger",
+        "@tanstack/react-router",
+        "drizzle-orm"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/routes/api/health/ready.ts"
+      ]
+    },
+    {
+      "path": "src/routes/api/vitals.ts",
+      "kind": "route",
+      "operations": [],
+      "imports": [
+        "@/db/client.server",
+        "@/db/schema",
+        "@/lib/structured-logger",
+        "@/lib/web-vitals-payload",
+        "@tanstack/react-router"
+      ],
+      "reachesDatabase": true,
+      "databasePaths": [
+        "src/db/client.server.ts",
+        "src/db/schema.ts",
+        "src/routes/api/vitals.ts"
+      ]
+    }
+  ],
+  "transactionSites": [
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 91,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 106,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 136,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 178,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 205,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 240,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 262,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 296,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-registry.ts",
+      "line": 322,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 104,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 174,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 188,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 262,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 272,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 296,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 316,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 347,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 351,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 372,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/ai/tool-runner.ts",
+      "line": 381,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/chat-execution.server.ts",
+      "line": 129,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/lib/chat-execution.server.ts",
+      "line": 141,
+      "expression": "context.transaction",
+      "classification": "compatibility-facade"
+    },
+    {
+      "path": "src/server/auth/membership.service.ts",
+      "line": 20,
+      "expression": "context.transaction",
+      "classification": "auth-allowlist"
+    },
+    {
+      "path": "src/server/auth/membership.service.ts",
+      "line": 35,
+      "expression": "context.transaction",
+      "classification": "auth-allowlist"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 67,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 89,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 114,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 135,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 161,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 171,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 191,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/ai-tool.repository.ts",
+      "line": 201,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/audit.repository.ts",
+      "line": 23,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/calculation-snapshot.repository.ts",
+      "line": 30,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/calculation-snapshot.repository.ts",
+      "line": 48,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/calculation-snapshot.repository.ts",
+      "line": 73,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 60,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 76,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 98,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 118,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 137,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 157,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 170,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/conversation.repository.ts",
+      "line": 182,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 39,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 47,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 53,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 64,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 75,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/dashboard.repository.ts",
+      "line": 86,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 37,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 58,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 67,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 80,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 90,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/expense.repository.ts",
+      "line": 99,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 532,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 618,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 731,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 781,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 814,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 848,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 920,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 1046,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 1110,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/memory.repository.ts",
+      "line": 1137,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/outbox.repository.ts",
+      "line": 77,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/outbox.repository.ts",
+      "line": 121,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/outbox.repository.ts",
+      "line": 171,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/outbox.repository.ts",
+      "line": 188,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/outbox.repository.ts",
+      "line": 208,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 97,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 140,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 178,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 210,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 245,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 288,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 297,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 318,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 331,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 344,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 354,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 364,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 372,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 382,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 392,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 397,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 417,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 441,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 488,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 498,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 516,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 523,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 539,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 544,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 551,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 569,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 581,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/product.repository.ts",
+      "line": 608,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/purchase-price.repository.ts",
+      "line": 52,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/purchase-price.repository.ts",
+      "line": 71,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/purchase-price.repository.ts",
+      "line": 80,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 56,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 69,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 93,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 102,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 123,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/sales.repository.ts",
+      "line": 131,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/simulation.repository.ts",
+      "line": 26,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/repositories/simulation.repository.ts",
+      "line": 36,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/services/event.service.ts",
+      "line": 38,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/services/event.service.ts",
+      "line": 45,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    },
+    {
+      "path": "src/server/services/outbox.worker.ts",
+      "line": 118,
+      "expression": "context.transaction",
+      "classification": "repository-fallback"
+    }
+  ],
+  "directDatabaseFiles": [
+    "src/db/client.server.ts",
+    "src/db/schema.ts",
+    "src/lib/ai/budget-ledger.server.ts",
+    "src/lib/ai/tool-registry.ts",
+    "src/lib/ai/tool-runner.ts",
+    "src/lib/chat-execution.server.ts",
+    "src/lib/chat.functions.ts",
+    "src/lib/expenses.functions.ts",
+    "src/middleware/request-context.ts",
+    "src/routes/api/health/ready.ts",
+    "src/routes/api/vitals.ts",
+    "src/server/auth/auth.server.ts",
+    "src/server/auth/membership.service.ts",
+    "src/server/auth/rate-limit-storage.server.ts",
+    "src/server/auth/tenant-bootstrap.server.ts",
+    "src/server/repositories/ai-tool.repository.ts",
+    "src/server/repositories/audit.repository.ts",
+    "src/server/repositories/calculation-snapshot.repository.ts",
+    "src/server/repositories/conversation.repository.ts",
+    "src/server/repositories/dashboard.repository.ts",
+    "src/server/repositories/expense.repository.ts",
+    "src/server/repositories/memory.repository.ts",
+    "src/server/repositories/outbox.repository.ts",
+    "src/server/repositories/product.repository.ts",
+    "src/server/repositories/purchase-price.repository.ts",
+    "src/server/repositories/sales.repository.ts",
+    "src/server/repositories/simulation.repository.ts",
+    "src/server/services/outbox.worker.ts",
+    "src/test/ai-estimated-cost.test.ts",
+    "src/test/ai-usage-unknown.test.ts",
+    "src/test/audit.service.test.ts",
+    "src/test/backfill-runner.test.ts",
+    "src/test/break-even.negative-margin.test.tsx",
+    "src/test/cross-tenant-denial.perf-waves.test.ts",
+    "src/test/financial-metrics.test.ts",
+    "src/test/helpers/chat-execution-fakes.ts",
+    "src/test/helpers/tool-runner-fakes.ts",
+    "src/test/m02-backup-verify.test.ts",
+    "src/test/m02-grant-repair.test.ts",
+    "src/test/m02-purge-fixtures.test.ts",
+    "src/test/migration-classes.test.ts",
+    "src/test/optimistic-version.repository.test.ts",
+    "src/test/product-contracts.test.ts",
+    "src/test/products-fk-conflict.test.ts",
+    "src/test/products-read-models.golden.perf-waves.test.ts",
+    "src/test/purchase-price.service.test.ts",
+    "src/test/round-trip-instrumentation.perf-waves.test.ts",
+    "src/test/safe-record.test.ts",
+    "src/test/tool-runner.persistence.test.ts"
+  ],
+  "policy": {
+    "schemaVersion": 1,
+    "status": "DRAFT",
+    "format": "JSON subset of YAML 1.2",
+    "authority": "docs/specs/M-02/spec.md",
+    "catalog": {
+      "services": {
+        "ProductService": {
+          "status": "implemented",
+          "path": "src/server/services/product.service.ts"
+        },
+        "PricingService": {
+          "status": "implemented",
+          "path": "src/server/services/pricing.service.ts"
+        },
+        "ExpenseService": {
+          "status": "implemented",
+          "path": "src/server/services/expense.service.ts"
+        },
+        "SalesService": {
+          "status": "implemented",
+          "path": "src/server/services/sales.service.ts"
+        },
+        "SimulationService": {
+          "status": "implemented",
+          "path": "src/server/services/simulation.service.ts"
+        },
+        "DiagnosticService": {
+          "status": "implemented",
+          "path": "src/server/services/diagnostic.service.ts"
+        },
+        "ConversationService": {
+          "status": "implemented",
+          "path": "src/server/services/conversation.service.ts"
+        },
+        "MemoryService": {
+          "status": "implemented",
+          "path": "src/server/services/memory.service.ts"
+        },
+        "AuditService": {
+          "status": "implemented",
+          "path": "src/server/services/audit.service.ts"
+        },
+        "EventService": {
+          "status": "implemented",
+          "path": "src/server/services/event.service.ts"
+        }
+      },
+      "repositories": {
+        "ProductRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/product.repository.ts"
+        },
+        "IngredientRepository": {
+          "status": "consolidated",
+          "path": "src/server/repositories/product.repository.ts"
+        },
+        "PackagingRepository": {
+          "status": "consolidated",
+          "path": "src/server/repositories/product.repository.ts"
+        },
+        "PriceRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/purchase-price.repository.ts"
+        },
+        "MarketPriceRepository": {
+          "status": "consolidated",
+          "path": "src/server/repositories/product.repository.ts"
+        },
+        "ExpenseRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/expense.repository.ts"
+        },
+        "SalesRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/sales.repository.ts"
+        },
+        "SimulationRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/simulation.repository.ts"
+        },
+        "DashboardRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/dashboard.repository.ts"
+        },
+        "ConversationRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/conversation.repository.ts"
+        },
+        "MemoryRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/memory.repository.ts"
+        },
+        "CalculationSnapshotRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/calculation-snapshot.repository.ts"
+        },
+        "AuditRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/audit.repository.ts"
+        },
+        "EventRepository": {
+          "status": "implemented",
+          "path": "src/server/repositories/outbox.repository.ts"
+        }
+      }
+    },
+    "exceptions": [
+      {
+        "id": "health",
+        "pathPrefix": "src/routes/api/health/",
+        "reason": "probe operacional sem domínio"
+      },
+      {
+        "id": "auth",
+        "pathPrefix": "src/middleware/request-context.ts",
+        "reason": "resolução de identidade e membership"
+      },
+      {
+        "id": "auth-rate-limit",
+        "pathPrefix": "src/server/auth/",
+        "reason": "persistência de autenticação e rate limit"
+      },
+      {
+        "id": "infra",
+        "pathPrefix": "src/db/",
+        "reason": "cliente e schema de persistência"
+      },
+      {
+        "id": "infra-scripts",
+        "pathPrefix": "scripts/",
+        "reason": "tooling e migrations operacionais"
+      },
+      {
+        "id": "infra-migration",
+        "pathPrefix": ".migration/",
+        "reason": "artefatos de migration"
+      },
+      {
+        "id": "transient-ai-modules",
+        "pathPrefix": "src/lib/ai/",
+        "reason": "TRANSITÓRIO (2026-09-05): budget-ledger é a arquitetura de referência H-001; unidades transacionais em transactionPolicies; migração ao catálogo-alvo permanece backlog M02-3/M-04"
+      },
+      {
+        "id": "transient-chat-execution",
+        "pathPrefix": "src/lib/chat-execution.server.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): unidades compostas de sendChatMessage (ADR-026); alvo M02-3"
+      },
+      {
+        "id": "transient-bff-chat-self",
+        "pathPrefix": "src/lib/chat.functions.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): histórico de conversa na tenant tx; alvo M02-3"
+      },
+      {
+        "id": "transient-bff-products-self",
+        "pathPrefix": "src/lib/products.functions.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): read-model UNION na tenant tx (wave PERF, patch pós-S4); alvo M02-2"
+      },
+      {
+        "id": "transient-bff-expenses-self",
+        "pathPrefix": "src/lib/expenses.functions.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): consulta de despesas shipada; alvo M02-4"
+      },
+      {
+        "id": "transient-service-purchase-price",
+        "pathPrefix": "src/server/services/purchase-price.service.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): service executa queries na tenant transaction (padrão WS-01..07); alvo M02-2"
+      },
+      {
+        "id": "transient-service-product-detail",
+        "pathPrefix": "src/server/services/product-detail.service.ts",
+        "reason": "TRANSITÓRIO (2026-09-05): service executa queries na tenant transaction (padrão WS-01..07); alvo M02-4"
+      }
+    ],
+    "entryPolicies": {
+      "src/lib/products.functions.ts": {
+        "service": "ProductService/PricingService",
+        "repository": "ProductRepository + child repositories",
+        "targetPhase": "M02-2"
+      },
+      "src/lib/chat.functions.ts": {
+        "service": "ConversationService",
+        "repository": "ConversationRepository",
+        "targetPhase": "M02-3"
+      },
+      "src/lib/expenses.functions.ts": {
+        "service": "ExpenseService",
+        "repository": "ExpenseRepository",
+        "targetPhase": "M02-4"
+      },
+      "src/lib/financial.functions.ts": {
+        "service": "SimulationService",
+        "repository": "SimulationRepository",
+        "targetPhase": "M02-4"
+      },
+      "src/lib/dashboard.functions.ts": {
+        "service": "DashboardService",
+        "repository": "DashboardRepository",
+        "targetPhase": "M02-4"
+      },
+      "src/lib/diagnostic.functions.ts": {
+        "service": "DiagnosticService/PricingService",
+        "repository": "ProductReadRepository + ExpenseRepository",
+        "targetPhase": "M02-4"
+      },
+      "src/lib/price-formation.functions.ts": {
+        "service": "PricingService",
+        "repository": null,
+        "targetPhase": "M02-4"
+      },
+      "src/lib/break-even.functions.ts": {
+        "service": "BreakEvenService",
+        "repository": null,
+        "targetPhase": "M02-4"
+      },
+      "src/lib/sales.functions.ts": {
+        "service": "SalesService",
+        "repository": "SalesRepository",
+        "targetPhase": "M02-4"
+      }
+    },
+    "operationPolicies": {
+      "src/lib/products.functions.ts": {
+        "listProducts": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "listProductsWithMetrics": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "getProduct": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "upsertProduct": {
+          "service": "ProductService",
+          "repository": "ProductRepository"
+        },
+        "createProduct": {
+          "service": "ProductService",
+          "repository": "ProductRepository"
+        },
+        "updateProduct": {
+          "service": "ProductService",
+          "repository": "ProductRepository"
+        },
+        "archiveProduct": {
+          "service": "ProductService",
+          "repository": "ProductRepository"
+        },
+        "deleteProduct": {
+          "service": "ProductService",
+          "repository": "ProductRepository"
+        },
+        "upsertIngredient": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "deleteIngredient": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "upsertPackaging": {
+          "service": "ProductService/PricingService",
+          "repository": "ProductCatalogRepository + PriceRepository"
+        },
+        "deletePackaging": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "upsertFee": {
+          "service": "PricingService",
+          "repository": "ProductCatalogRepository"
+        },
+        "deleteFee": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "setMarketPrice": {
+          "service": "PricingService",
+          "repository": "MarketPriceRepository"
+        },
+        "getProductMetrics": {
+          "service": "ProductService",
+          "repository": "ProductCatalogRepository"
+        },
+        "listPurchasePrices": {
+          "service": "PricingService",
+          "repository": "ProductCatalogRepository"
+        },
+        "updatePurchasePrice": {
+          "service": "PricingService",
+          "repository": "PriceRepository"
+        }
+      },
+      "src/lib/expenses.functions.ts": {
+        "listExpenses": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        },
+        "createExpense": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        },
+        "updateExpense": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        },
+        "upsertExpense": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        },
+        "deleteExpense": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        },
+        "getTotals": {
+          "service": "ExpenseService",
+          "repository": "ExpenseRepository"
+        }
+      },
+      "src/lib/chat.functions.ts": {
+        "getChatHistory": {
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        "createChatConversation": {
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        "clearChatHistory": {
+          "service": "ConversationService",
+          "repository": "ConversationRepository",
+          "atomicity": "per-conversation-operation"
+        },
+        "sendChatMessage": {
+          "service": "ConversationService/ChatExecution",
+          "repository": "ConversationRepository + BudgetRepository + AiToolRepository + AuditRepository",
+          "atomicity": "composed"
+        }
+      },
+      "src/lib/sales.functions.ts": {
+        "createSale": {
+          "service": "SalesService",
+          "repository": "SalesRepository",
+          "atomicity": "per-operation"
+        },
+        "listSales": {
+          "service": "SalesService",
+          "repository": "SalesRepository",
+          "atomicity": "per-operation"
+        }
+      }
+    },
+    "transactionPolicies": {
+      "src/lib/products.functions.ts": {
+        "atomicity": "per-operation",
+        "targetPhase": "M02-2"
+      },
+      "src/lib/chat.functions.ts": {
+        "atomicity": "composed",
+        "targetPhase": "M02-3",
+        "units": [
+          {
+            "id": "chat-reservation-history",
+            "boundary": "tenant-transaction",
+            "evidence": "src/lib/chat-execution.server.ts:93-128"
+          },
+          {
+            "id": "model-round-reserve",
+            "boundary": "per-round-reservation",
+            "idempotencyKey": "usageId",
+            "evidence": "src/lib/chat-execution.server.ts:210-245"
+          },
+          {
+            "id": "model-round-settle",
+            "boundary": "per-round-settlement",
+            "idempotencyKey": "usageId",
+            "evidence": "src/lib/chat-execution.server.ts:246-279"
+          },
+          {
+            "id": "budget-sweep",
+            "boundary": "budget-transaction",
+            "evidence": "src/server/repositories/budget.repository.ts:64-114"
+          },
+          {
+            "id": "tool-execution-replay",
+            "boundary": "per-tool-call",
+            "idempotencyKey": "${conversationId}:${toolCall.id}",
+            "evidence": "src/lib/ai/tool-runner.ts:125-219"
+          },
+          {
+            "id": "audit-append",
+            "boundary": "per-tool-execution",
+            "evidence": "src/server/repositories/audit.repository.ts:1-120"
+          }
+        ]
+      },
+      "src/lib/chat-execution.server.ts": {
+        "atomicity": "per-settlement-step",
+        "targetPhase": "M02-3"
+      }
+    }
+  },
+  "entryPolicies": {
+    "src/lib/products.functions.ts": {
+      "service": "ProductService/PricingService",
+      "repository": "ProductRepository + child repositories",
+      "targetPhase": "M02-2"
+    },
+    "src/lib/chat.functions.ts": {
+      "service": "ConversationService",
+      "repository": "ConversationRepository",
+      "targetPhase": "M02-3"
+    },
+    "src/lib/expenses.functions.ts": {
+      "service": "ExpenseService",
+      "repository": "ExpenseRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/financial.functions.ts": {
+      "service": "SimulationService",
+      "repository": "SimulationRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/dashboard.functions.ts": {
+      "service": "DashboardService",
+      "repository": "DashboardRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/diagnostic.functions.ts": {
+      "service": "DiagnosticService/PricingService",
+      "repository": "ProductReadRepository + ExpenseRepository",
+      "targetPhase": "M02-4"
+    },
+    "src/lib/price-formation.functions.ts": {
+      "service": "PricingService",
+      "repository": null,
+      "targetPhase": "M02-4"
+    },
+    "src/lib/break-even.functions.ts": {
+      "service": "BreakEvenService",
+      "repository": null,
+      "targetPhase": "M02-4"
+    },
+    "src/lib/sales.functions.ts": {
+      "service": "SalesService",
+      "repository": "SalesRepository",
+      "targetPhase": "M02-4"
+    }
+  },
+  "transactionPolicies": {
+    "src/lib/products.functions.ts": {
+      "atomicity": "per-operation",
+      "targetPhase": "M02-2"
+    },
+    "src/lib/chat.functions.ts": {
+      "atomicity": "composed",
+      "targetPhase": "M02-3",
+      "units": [
+        {
+          "id": "chat-reservation-history",
+          "boundary": "tenant-transaction",
+          "evidence": "src/lib/chat-execution.server.ts:93-128"
+        },
+        {
+          "id": "model-round-reserve",
+          "boundary": "per-round-reservation",
+          "idempotencyKey": "usageId",
+          "evidence": "src/lib/chat-execution.server.ts:210-245"
+        },
+        {
+          "id": "model-round-settle",
+          "boundary": "per-round-settlement",
+          "idempotencyKey": "usageId",
+          "evidence": "src/lib/chat-execution.server.ts:246-279"
+        },
+        {
+          "id": "budget-sweep",
+          "boundary": "budget-transaction",
+          "evidence": "src/server/repositories/budget.repository.ts:64-114"
+        },
+        {
+          "id": "tool-execution-replay",
+          "boundary": "per-tool-call",
+          "idempotencyKey": "${conversationId}:${toolCall.id}",
+          "evidence": "src/lib/ai/tool-runner.ts:125-219"
+        },
+        {
+          "id": "audit-append",
+          "boundary": "per-tool-execution",
+          "evidence": "src/server/repositories/audit.repository.ts:1-120"
+        }
+      ]
+    },
+    "src/lib/chat-execution.server.ts": {
+      "atomicity": "per-settlement-step",
+      "targetPhase": "M02-3"
+    }
+  }
+}

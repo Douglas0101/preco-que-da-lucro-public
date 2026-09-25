@@ -1,0 +1,146 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786510674427,
+      "tag": "0000_p0_postgres_foundation",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786510700000,
+      "tag": "0001_p0_runtime_role_and_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786679075477,
+      "tag": "0002_rate_limit_database",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786767213666,
+      "tag": "0003_curvy_firebrand",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786772449256,
+      "tag": "0004_giant_nocturne",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1787300000000,
+      "tag": "0005_ai_tool_call_count",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787791901561,
+      "tag": "0006_loud_lockjaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1788030982407,
+      "tag": "0007_add_accounts_issuer",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1788234629775,
+      "tag": "0008_workable_professor_monster",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788320068519,
+      "tag": "0009_military_gertrude_yorkes",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788320100000,
+      "tag": "0010_backfill_accounts_issuer",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1789046119111,
+      "tag": "0011_auth_rls_normalization",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1789324378233,
+      "tag": "0012_youthful_stellaris",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1789327764259,
+      "tag": "0013_robust_cammi",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1789353634317,
+      "tag": "0014_mighty_veda",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1789448019865,
+      "tag": "0015_curved_riptide",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1789528188159,
+      "tag": "0016_slim_imperial_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1789530795231,
+      "tag": "0017_past_gideon",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1789614656044,
+      "tag": "0018_polite_living_tribunal",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789698474294,
+      "tag": "0019_tiresome_robin_chapel",
+      "breakpoints": true
+    }
+  ]
+}

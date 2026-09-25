@@ -1,0 +1,169 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Local environment
+.env
+.env.*
+*.env
+!.env.example
+!.env.*.example
+.neon
+.envrc*
+.agents/
+.codex/
+skills-lock.json
+.dev.vars*
+
+# Local credentials and provider state
+/.aws/
+/.azure/
+/.gcloud/
+/.secrets/
+/secrets/
+**/.npmrc
+!/.npmrc
+service-account*.json
+credentials*.json
+secrets.json
+.secrets.json
+*-credentials.json
+*-secret.json
+*.token
+*.secret
+*.secrets
+
+# Agent MCP client configs — may embed API tokens
+**/.mcp.json
+.cursor/
+.gemini/
+.kimi/
+.kimi-code/
+
+node_modules
+dist
+dist-ssr
+.output
+.vinxi
+.tanstack/**
+.nitro
+coverage
+.artifacts/
+/artifacts/
+/backups/
+/snapshots/
+/exports/
+/tmp/
+/temp/
+.worktree-*/
+.p0-closeout-docker/
+# Symlink local para o checkout do harness (fora deste repo) — nunca versionar.
+# Sem barra final de proposito: o git nao segue symlink, entao `deepseek-harness/`
+# (dir-only) nao casaria com o link.
+deepseek-harness
+playwright-report
+test-results
+.cache/
+.vite/
+.turbo/
+.nyc_output/
+.eslintcache
+*.tsbuildinfo
+blob-report/
+supabase/.temp/
+supabase/.branches/
+*.local
+
+# Private key material and local databases
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+service-account*.json
+credentials*.json
+*.db
+*.sqlite
+*.sqlite3
+*.dump
+*.sql.gz
+*.backup
+*.bak
+*.p8
+*.ppk
+id_rsa*
+id_ed25519*
+
+# Local tooling and Python caches
+.mimosa/
+.pi/
+.zcode/
+.ruff_cache/
+__pycache__/
+.pytest_cache/
+.venv/
+venv/
+.direnv/
+
+# Generated or sensitive forensic subtrees
+docs/evidence/**/artifacts/
+docs/evidence/**/logs/
+docs/evidence/**/snapshots/
+docs/evidence/**/raw/
+docs/evidence/**/private/
+docs/evidence/**/secrets/
+docs/evidence/**/credentials/
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+Thumbs.db
+.history/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+*.swo
+*.sw?
+
+# Vercel local build output (Build Output API)
+.vercel/
+
+# ========================================
+# ARTEFATOS LOCAIS COM PII (Preservação de Desenvolvimento)
+# ========================================
+# Estes arquivos contêm headers From: com identidade pessoal.
+# São mantidos localmente para uso em desenvolvimento.
+# NÃO devem ser incluídos em snapshots públicos.
+
+# Patches locais (contêm headers de author)
+release/**/*.patch
+docs/evidence/**/*.patch
+*.patch
+
+# Bundles locais (podem conter histórico com PII)
+release/**/*.bundle
+docs/evidence/**/*.bundle
+*.bundle
+_preservation/**/*.bundle
+
+# Diretórios de preservação local
+_preservation/
+release/
+
+# Auditoria raw (relatórios não redigidos)
+docs/auditoria-publicacao/raw/
+docs/auditoria-publicacao/*.redacted.json

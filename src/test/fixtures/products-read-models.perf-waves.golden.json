@@ -1,0 +1,436 @@
+{
+  "listProductsWithMetrics": [
+    {
+      "product": {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Bolo de Cacau",
+        "status": "incomplete",
+        "current_price": "25.5000",
+        "yield_qty": "12.000000",
+        "yield_unit": "unidades",
+        "tax_regime": "simples nacional",
+        "tax_rate": "0.060000",
+        "is_demo": false,
+        "notes": "receita da vó",
+        "version": 0,
+        "archived_at": null,
+        "created_at": "2026-01-03T10:00:00.000Z",
+        "updated_at": "2026-01-03T10:00:00.000Z"
+      },
+      "ingredients": [
+        {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "product_id": "00000000-0000-4000-8000-000000000001",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Farinha",
+          "used_qty": "1.000000",
+          "used_unit": "kg",
+          "package_price": "8.9000",
+          "package_qty": "5.000000",
+          "package_unit": "kg",
+          "conversion_factor": "1.00000000",
+          "price_updated_at": "2026-01-02T12:00:00.000Z",
+          "created_at": "2026-01-03T10:05:00.000Z",
+          "updated_at": "2026-01-03T10:05:00.000Z"
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "product_id": "00000000-0000-4000-8000-000000000001",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Ovo",
+          "used_qty": "3.000000",
+          "used_unit": "unidade",
+          "package_price": null,
+          "package_qty": null,
+          "package_unit": null,
+          "conversion_factor": null,
+          "price_updated_at": null,
+          "created_at": "2026-01-03T10:06:00.000Z",
+          "updated_at": "2026-01-03T10:06:00.000Z"
+        }
+      ],
+      "packaging": [
+        {
+          "id": "00000000-0000-4000-8000-000000000021",
+          "product_id": "00000000-0000-4000-8000-000000000001",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Caixa",
+          "package_price": "1.2000",
+          "units_per_package": "10.000000",
+          "price_updated_at": "2026-01-02T12:00:00.000Z",
+          "created_at": "2026-01-03T10:07:00.000Z",
+          "updated_at": "2026-01-03T10:07:00.000Z"
+        }
+      ],
+      "fees": [
+        {
+          "id": "00000000-0000-4000-8000-000000000031",
+          "product_id": "00000000-0000-4000-8000-000000000001",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Cartão",
+          "percentage": "0.029900",
+          "created_at": "2026-01-03T10:08:00.000Z",
+          "updated_at": "2026-01-03T10:08:00.000Z"
+        },
+        {
+          "id": "00000000-0000-4000-8000-000000000032",
+          "product_id": "00000000-0000-4000-8000-000000000001",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Imposto",
+          "percentage": "0.120000",
+          "created_at": "2026-01-03T10:09:00.000Z",
+          "updated_at": "2026-01-03T10:09:00.000Z"
+        }
+      ],
+      "market": {
+        "id": "00000000-0000-4000-8000-000000000041",
+        "product_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "min_price": "20.0000",
+        "avg_price": "24.0000",
+        "max_price": "30.0000",
+        "created_at": "2026-01-05T08:00:00.000Z"
+      },
+      "metrics": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "ingredients[1].package_price"
+          },
+          {
+            "field": "ingredients[1].package_qty"
+          },
+          {
+            "field": "ingredients[1].package_unit"
+          }
+        ],
+        "warnings": []
+      },
+      "completeness": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "ingredients[1].package_price"
+          },
+          {
+            "field": "ingredients[1].package_qty"
+          },
+          {
+            "field": "ingredients[1].package_unit"
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "product": {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Pão Artesanal",
+        "status": "incomplete",
+        "current_price": null,
+        "yield_qty": null,
+        "yield_unit": null,
+        "tax_regime": null,
+        "tax_rate": null,
+        "is_demo": true,
+        "notes": null,
+        "version": 0,
+        "archived_at": null,
+        "created_at": "2026-01-02T10:00:00.000Z",
+        "updated_at": "2026-01-02T10:00:00.000Z"
+      },
+      "ingredients": [
+        {
+          "id": "00000000-0000-4000-8000-000000000013",
+          "product_id": "00000000-0000-4000-8000-000000000002",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Fermento",
+          "used_qty": "0.010000",
+          "used_unit": "kg",
+          "package_price": "2.5000",
+          "package_qty": "0.500000",
+          "package_unit": "kg",
+          "conversion_factor": "0.50000000",
+          "price_updated_at": "2026-01-01T09:00:00.000Z",
+          "created_at": "2026-01-02T10:05:00.000Z",
+          "updated_at": "2026-01-02T10:05:00.000Z"
+        }
+      ],
+      "packaging": [
+        {
+          "id": "00000000-0000-4000-8000-000000000022",
+          "product_id": "00000000-0000-4000-8000-000000000002",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Saco kraft",
+          "package_price": "0.3000",
+          "units_per_package": "1.000000",
+          "price_updated_at": null,
+          "created_at": "2026-01-02T10:07:00.000Z",
+          "updated_at": "2026-01-02T10:07:00.000Z"
+        }
+      ],
+      "fees": [
+        {
+          "id": "00000000-0000-4000-8000-000000000033",
+          "product_id": "00000000-0000-4000-8000-000000000002",
+          "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+          "user_id": "user-1",
+          "name": "Delivery",
+          "percentage": "0.050000",
+          "created_at": "2026-01-02T10:08:00.000Z",
+          "updated_at": "2026-01-02T10:08:00.000Z"
+        }
+      ],
+      "market": {
+        "id": "00000000-0000-4000-8000-000000000043",
+        "product_id": "00000000-0000-4000-8000-000000000002",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "min_price": "5.0000",
+        "avg_price": "6.0000",
+        "max_price": "8.0000",
+        "created_at": "2026-01-04T08:00:00.000Z"
+      },
+      "metrics": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "yieldQty"
+          },
+          {
+            "field": "price"
+          },
+          {
+            "field": "taxRate"
+          }
+        ],
+        "warnings": []
+      },
+      "completeness": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "yieldQty"
+          },
+          {
+            "field": "price"
+          },
+          {
+            "field": "taxRate"
+          }
+        ],
+        "warnings": []
+      }
+    },
+    {
+      "product": {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Geleia sem filhos",
+        "status": "incomplete",
+        "current_price": "18.0000",
+        "yield_qty": "20.000000",
+        "yield_unit": "potinhos",
+        "tax_regime": null,
+        "tax_rate": null,
+        "is_demo": false,
+        "notes": null,
+        "version": 0,
+        "archived_at": null,
+        "created_at": "2026-01-01T10:00:00.000Z",
+        "updated_at": "2026-01-01T10:00:00.000Z"
+      },
+      "ingredients": [],
+      "packaging": [],
+      "fees": [],
+      "market": null,
+      "metrics": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "taxRate"
+          }
+        ],
+        "warnings": []
+      },
+      "completeness": {
+        "status": "incomplete",
+        "missing": [
+          {
+            "field": "taxRate"
+          }
+        ],
+        "warnings": []
+      }
+    }
+  ],
+  "listProducts": [
+    {
+      "id": "00000000-0000-4000-8000-000000000001",
+      "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+      "user_id": "user-1",
+      "name": "Bolo de Cacau",
+      "status": "incomplete",
+      "current_price": "25.5000",
+      "yield_qty": "12.000000",
+      "yield_unit": "unidades",
+      "tax_regime": "simples nacional",
+      "tax_rate": "0.060000",
+      "is_demo": false,
+      "notes": "receita da vó",
+      "version": 0,
+      "archived_at": null,
+      "created_at": "2026-01-03T10:00:00.000Z",
+      "updated_at": "2026-01-03T10:00:00.000Z"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000002",
+      "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+      "user_id": "user-1",
+      "name": "Pão Artesanal",
+      "status": "incomplete",
+      "current_price": null,
+      "yield_qty": null,
+      "yield_unit": null,
+      "tax_regime": null,
+      "tax_rate": null,
+      "is_demo": true,
+      "notes": null,
+      "version": 0,
+      "archived_at": null,
+      "created_at": "2026-01-02T10:00:00.000Z",
+      "updated_at": "2026-01-02T10:00:00.000Z"
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000003",
+      "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+      "user_id": "user-1",
+      "name": "Geleia sem filhos",
+      "status": "incomplete",
+      "current_price": "18.0000",
+      "yield_qty": "20.000000",
+      "yield_unit": "potinhos",
+      "tax_regime": null,
+      "tax_rate": null,
+      "is_demo": false,
+      "notes": null,
+      "version": 0,
+      "archived_at": null,
+      "created_at": "2026-01-01T10:00:00.000Z",
+      "updated_at": "2026-01-01T10:00:00.000Z"
+    }
+  ],
+  "listPurchasePrices": {
+    "products": [
+      {
+        "id": "00000000-0000-4000-8000-000000000001",
+        "name": "Bolo de Cacau"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000002",
+        "name": "Pão Artesanal"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000003",
+        "name": "Geleia sem filhos"
+      }
+    ],
+    "ingredients": [
+      {
+        "id": "00000000-0000-4000-8000-000000000011",
+        "product_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Farinha",
+        "used_qty": "1.000000",
+        "used_unit": "kg",
+        "package_price": "8.9000",
+        "package_qty": "5.000000",
+        "package_unit": "kg",
+        "conversion_factor": "1.00000000",
+        "price_updated_at": "2026-01-02T12:00:00.000Z",
+        "created_at": "2026-01-03T10:05:00.000Z",
+        "updated_at": "2026-01-03T10:05:00.000Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000013",
+        "product_id": "00000000-0000-4000-8000-000000000002",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Fermento",
+        "used_qty": "0.010000",
+        "used_unit": "kg",
+        "package_price": "2.5000",
+        "package_qty": "0.500000",
+        "package_unit": "kg",
+        "conversion_factor": "0.50000000",
+        "price_updated_at": "2026-01-01T09:00:00.000Z",
+        "created_at": "2026-01-02T10:05:00.000Z",
+        "updated_at": "2026-01-02T10:05:00.000Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000012",
+        "product_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Ovo",
+        "used_qty": "3.000000",
+        "used_unit": "unidade",
+        "package_price": null,
+        "package_qty": null,
+        "package_unit": null,
+        "conversion_factor": null,
+        "price_updated_at": null,
+        "created_at": "2026-01-03T10:06:00.000Z",
+        "updated_at": "2026-01-03T10:06:00.000Z"
+      }
+    ],
+    "packaging": [
+      {
+        "id": "00000000-0000-4000-8000-000000000021",
+        "product_id": "00000000-0000-4000-8000-000000000001",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Caixa",
+        "package_price": "1.2000",
+        "units_per_package": "10.000000",
+        "price_updated_at": "2026-01-02T12:00:00.000Z",
+        "created_at": "2026-01-03T10:07:00.000Z",
+        "updated_at": "2026-01-03T10:07:00.000Z"
+      },
+      {
+        "id": "00000000-0000-4000-8000-000000000022",
+        "product_id": "00000000-0000-4000-8000-000000000002",
+        "tenant_id": "aaaaaaa1-0000-4000-8000-000000000001",
+        "user_id": "user-1",
+        "name": "Saco kraft",
+        "package_price": "0.3000",
+        "units_per_package": "1.000000",
+        "price_updated_at": null,
+        "created_at": "2026-01-02T10:07:00.000Z",
+        "updated_at": "2026-01-02T10:07:00.000Z"
+      }
+    ]
+  },
+  "empty": {
+    "listProductsWithMetrics": [],
+    "listPurchasePrices": {
+      "products": [],
+      "ingredients": [],
+      "packaging": []
+    }
+  }
+}
