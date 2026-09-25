@@ -103,7 +103,7 @@ jobs:
 
       - name: Create ephemeral branch pr-<num> (§12.4 parent production para main, develop para os demais)
         id: create
-        uses: neondatabase/create-branch-action@fb620d43d4c565abaf088b848a4e28e5c4ea4d9c # 6.3.1
+        uses: neondatabase/create-branch-action@72ed4f69a12b6be9c16aebfad893f6a21e9aba8b # 6.4.0
         with:
           project_id: ${{ vars.NEON_PROJECT_ID || 'damp-forest-57346541' }}
           api_key: ${{ secrets.NEON_API_KEY }}
