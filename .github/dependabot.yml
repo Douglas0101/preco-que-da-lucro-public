@@ -23,7 +23,7 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 5
+    open-pull-requests-limit: 10
 
   # github-actions: `directory: "/"` faz o Dependabot varrer /.github/workflows
   # e o action.yml/action.yaml da raiz.
@@ -31,4 +31,4 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 5
