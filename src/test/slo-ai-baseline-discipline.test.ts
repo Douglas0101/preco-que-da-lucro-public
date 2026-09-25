@@ -264,11 +264,51 @@ describe("§29 — disciplina de baseline CONTROLADO (mock) × OBSERVED (provide
   });
 
   it("deriva o p75 do frontend do raw fixture sem recriar limiares", () => {
-    const extract = frontendReport as unknown as Record<string, unknown>;
-    expect(extract.window).toBe(rumSource.window);
-    expect(extract.min_samples).toBe(rumSource.min_samples);
-    expect(extract.targets).toEqual(rumSource.targets);
-    expect(seriesOf(extract)).toEqual(frontendReport.series);
+    const report = frontendReport as unknown as Record<string, unknown>;
+    expect(report.window).toBe(rumSource.window);
+    expect(report.min_samples).toBe(rumSource.min_samples);
+    expect(report.targets).toEqual(rumSource.targets);
+    expect(seriesOf(report)).toEqual([
+      {
+        name: "LCP",
+        regime: "CONTROLLED",
+        provider: "mock",
+        n: 20,
+        p75: 2000,
+        unit: "ms",
+        target: 2500,
+        target_label: "LCP ≤ 2,5 s",
+        verdict: "OK",
+        window_start: "2026-09-12T10:45:51.597Z",
+        window_end: "2026-09-14T01:45:51.597Z",
+      },
+      {
+        name: "INP",
+        regime: "CONTROLLED",
+        provider: "mock",
+        n: 20,
+        p75: 180,
+        unit: "ms",
+        target: 200,
+        target_label: "INP ≤ 200 ms",
+        verdict: "OK",
+        window_start: "2026-09-12T10:45:51.597Z",
+        window_end: "2026-09-14T01:45:51.597Z",
+      },
+      {
+        name: "CLS",
+        regime: "CONTROLLED",
+        provider: "mock",
+        n: 12,
+        p75: 0.05,
+        unit: "",
+        target: 0.1,
+        target_label: "CLS ≤ 0,1",
+        verdict: "N/A (N=12 < 20)",
+        window_start: "2026-09-12T10:45:51.597Z",
+        window_end: "2026-09-14T01:45:51.597Z",
+      },
+    ]);
     for (const row of rumSource.rows) expect(officialVerdict(row)).toBe(row.verdict);
   });
 
@@ -279,6 +319,11 @@ describe("§29 — disciplina de baseline CONTROLADO (mock) × OBSERVED (provide
     expect(sloDoc).toContain("2026-09-12T10:45:51.597Z");
     expect(sloDoc).toContain("2026-09-14T01:45:51.597Z");
     for (const entry of frontendReport.series) expect(sloDoc).toContain(`N=${entry.n}`);
+    expect(frontendReport.regime).toBe("CONTROLLED");
+    for (const entry of iaReport.series) {
+      expect(sloDoc).toContain(entry.name);
+      expect(sloDoc).toContain(entry.scenario);
+    }
     expect(sloDoc).toContain("time_to_first_content == time_to_final");
     expect(sloDoc).toContain("LCP ≤ 2,5 s");
     expect(sloDoc).toContain("INP ≤ 200 ms");

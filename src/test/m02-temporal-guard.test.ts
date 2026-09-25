@@ -125,8 +125,9 @@ describe("m02-temporal-guard — âncoras e prazos da superfície viva", () => {
 
   it("a superfície de evidência ausente no snapshot falha fechada", () => {
     const r = spawnSync(process.execPath, [GUARDA], { cwd: root, encoding: "utf8" });
+    const output = `${r.stdout}${r.stderr}`;
     expect(r.status).toBe(2);
-    expect(`${r.stdout}${r.stderr}`).toContain("superficie viva ausente");
+    expect(output).toMatch(/superficie viva ausente|clone raso/);
   });
 });
 

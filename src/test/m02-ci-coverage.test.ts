@@ -1,95 +1,127 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { isDeepStrictEqual } from "node:util";
 import { describe, expect, it } from "vitest";
-import { auditCoverage, parseTriggerLists } from "../../scripts/lib/m02-ci-coverage";
+import { parse } from "yaml";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
-const heavyPath = resolve(root, ".github/workflows/ui-stack.yml");
-const lightPath = resolve(root, ".github/workflows/ci-light.yml");
-const heavyReal = readFileSync(heavyPath, "utf8");
-const lightReal = readFileSync(lightPath, "utf8");
+const ciReal = readFileSync(resolve(root, ".github/workflows/ci.yml"), "utf8");
+const dependabotReal = readFileSync(resolve(root, ".github/dependabot.yml"), "utf8");
 
-describe("cobertura de CI dos dois pipelines", () => {
-  it("os workflows reais satisfazem o invariante (light.paths == heavy.paths-ignore)", () => {
-    expect(auditCoverage(heavyReal, lightReal)).toEqual([]);
+function record(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+function validatePublicCi(source: string): string[] {
+  const findings: string[] = [];
+  let parsed: unknown;
+  try {
+    parsed = parse(source);
+  } catch {
+    return ["public CI YAML must be valid"];
+  }
+  const workflow = record(parsed);
+  const triggers = record(workflow?.on);
+  const jobs = record(workflow?.jobs);
+  const verify = record(jobs?.verify);
+  const steps = Array.isArray(verify?.steps) ? verify.steps : [];
+
+  if (
+    !isDeepStrictEqual(triggers, {
+      push: { branches: ["main"] },
+      pull_request: null,
+      workflow_dispatch: null,
+    })
+  ) {
+    findings.push(
+      "public CI triggers must be pushes to main, all pull requests, and manual dispatch",
+    );
+  }
+  if (!isDeepStrictEqual(workflow?.permissions, { contents: "read" })) {
+    findings.push("public CI permissions must be contents: read");
+  }
+  if (!verify || verify["timeout-minutes"] !== 15) {
+    findings.push("public CI must define verify with timeout 15");
+  }
+  if (!steps.some((step) => record(step)?.run === "npm run check:public")) {
+    findings.push("verify must run npm run check:public");
+  }
+  return findings;
+}
+
+interface DependabotUpdate {
+  "package-ecosystem": string;
+  directory: string;
+  schedule: { interval: string };
+  "open-pull-requests-limit": number;
+}
+
+function dependabotUpdates(source: string): DependabotUpdate[] {
+  const parsed = record(parse(source));
+  return Array.isArray(parsed?.updates) ? (parsed.updates as DependabotUpdate[]) : [];
+}
+
+function validateDependabot(source: string): string[] {
+  const findings: string[] = [];
+  if (record(parse(source))?.version !== 2) findings.push("Dependabot version must be 2");
+  if (
+    !isDeepStrictEqual(dependabotUpdates(source), [
+      {
+        "package-ecosystem": "npm",
+        directory: "/",
+        schedule: { interval: "weekly" },
+        "open-pull-requests-limit": 10,
+      },
+      {
+        "package-ecosystem": "github-actions",
+        directory: "/",
+        schedule: { interval: "weekly" },
+        "open-pull-requests-limit": 5,
+      },
+    ])
+  ) {
+    findings.push(
+      "Dependabot must update npm and github-actions weekly at root with limits 10 and 5",
+    );
+  }
+  return findings;
+}
+
+function replaceExactly(source: string, from: string, to: string): string {
+  const mutated = source.replace(from, to);
+  expect(mutated).not.toBe(source);
+  return mutated;
+}
+
+describe("contrato de CI do snapshot público", () => {
+  it("aciona verify em pushes para main, todos os PRs e execução manual", () => {
+    expect(validatePublicCi(ciReal)).toEqual([]);
   });
 
-  it("o parser extrai as listas de push e o PR irrestrito da heavy", () => {
-    const heavy = parseTriggerLists(heavyReal);
-    expect(heavy.pushPathsIgnore).toEqual(["docs/evidence/**"]);
-    expect(heavy.pullRequestAny).toBe(true);
-    const light = parseTriggerLists(lightReal);
-    expect(light.pushPaths).toEqual(["docs/evidence/**"]);
-    expect(light.pullRequestPaths).toEqual(["docs/evidence/**"]);
+  it.each([
+    ["push", "  push:\n    branches: [main]\n"],
+    ["pull_request", "  pull_request:\n"],
+    ["workflow_dispatch", "  workflow_dispatch:\n"],
+  ])("reprova quando o gatilho público %s está ausente", (_trigger, block) => {
+    expect(validatePublicCi(replaceExactly(ciReal, block, ""))).toContain(
+      "public CI triggers must be pushes to main, all pull requests, and manual dispatch",
+    );
   });
 
-  it("filtros divergentes entre os dois workflows reprovam", () => {
-    const light = lightReal.replaceAll('"docs/evidence/**"', '"docs/**"');
-    const findings = auditCoverage(heavyReal, light);
-    expect(findings.join("\n")).toContain("light.push.paths");
+  it("configura semanalmente npm e github-actions na raiz com limites 10 e 5", () => {
+    expect(validateDependabot(dependabotReal)).toEqual([]);
   });
 
-  it("heavy com pull_request filtrado reprova (PR docs-only escaparia dos dois)", () => {
-    const heavy = heavyReal.replace(
-      "  pull_request:\n",
-      '  pull_request:\n    paths:\n      - "src/**"\n',
+  it.each([
+    ["limite", "    open-pull-requests-limit: 10", "    open-pull-requests-limit: 9"],
+    ["ecossistema", "  - package-ecosystem: npm", "  - package-ecosystem: pip"],
+    ["intervalo", "      interval: weekly", "      interval: daily"],
+  ])("reprova Dependabot com %s divergente", (_field, from, to) => {
+    expect(validateDependabot(replaceExactly(dependabotReal, from, to))).toContain(
+      "Dependabot must update npm and github-actions weekly at root with limits 10 and 5",
     );
-    const findings = auditCoverage(heavy, lightReal);
-    expect(findings.join("\n")).toContain("pull_request irrestrito");
-  });
-
-  it("heavy com pull_request filtrado por paths-ignore reprova", () => {
-    const heavy = heavyReal.replace(
-      "  pull_request:\n",
-      '  pull_request:\n    paths-ignore:\n      - "src/**"\n',
-    );
-    expect(auditCoverage(heavy, lightReal).join("\n")).toContain("pull_request irrestrito");
-  });
-
-  it("guards só em comentário reprovam (o passo real tem de existir)", () => {
-    const heavyComentado = heavyReal.replace(
-      "      - run: npm run m02:debts-guard",
-      "      # - run: npm run m02:debts-guard",
-    );
-    expect(auditCoverage(heavyComentado, lightReal).join("\n")).toContain("m02:debts-guard");
-    const lightComentado = lightReal.replace(
-      "        run: node scripts/m02-debts-guard.mjs",
-      "        # run: node scripts/m02-debts-guard.mjs",
-    );
-    expect(auditCoverage(heavyReal, lightComentado).join("\n")).toContain("m02-debts-guard");
-  });
-
-  it("light sem lockfile guard, secrets audit ou prettier reprova", () => {
-    const semLockfile = lightReal.replace(
-      "        run: node scripts/m02-lockfile-guard.mjs",
-      "        # run: node scripts/m02-lockfile-guard.mjs",
-    );
-    expect(auditCoverage(heavyReal, semLockfile).join("\n")).toContain("m02-lockfile-guard");
-    const semSecrets = lightReal.replace(
-      "        run: node scripts/m02-secrets-audit.ts",
-      "        # run: node scripts/m02-secrets-audit.ts",
-    );
-    expect(auditCoverage(heavyReal, semSecrets).join("\n")).toContain("m02-secrets-audit");
-    const semPrettier = lightReal.replace(
-      'npx --yes "prettier@${version}" --check "${files[@]}"',
-      "echo skip",
-    );
-    expect(auditCoverage(heavyReal, semPrettier).join("\n")).toContain("prettier");
-  });
-
-  it("guards ausentes em qualquer um dos lados reprovam", () => {
-    const lightSemDebts = lightReal.replace(/.*m02-debts-guard.*\n/, "");
-    expect(auditCoverage(heavyReal, lightSemDebts).join("\n")).toContain("m02-debts-guard");
-    const heavySemWp = heavyReal.replace("      - run: npm run m02:work-package-guard\n", "");
-    expect(auditCoverage(heavySemWp, lightReal).join("\n")).toContain("m02:work-package-guard");
-  });
-
-  it("light sem push.paths reprova (docs-only ficaria sem pipeline)", () => {
-    const lightSemPaths = lightReal.replace(
-      '  push:\n    paths:\n      - "docs/evidence/**"\n',
-      "  push:\n",
-    );
-    expect(auditCoverage(heavyReal, lightSemPaths).join("\n")).toContain("light sem push.paths");
   });
 });
