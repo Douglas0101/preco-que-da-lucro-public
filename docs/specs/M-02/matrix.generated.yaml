@@ -191,7 +191,7 @@
       "operations": [
         {
           "name": "listExpenses",
-          "line": 71,
+          "line": 108,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -199,7 +199,7 @@
         },
         {
           "name": "createExpense",
-          "line": 106,
+          "line": 143,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -207,7 +207,7 @@
         },
         {
           "name": "updateExpense",
-          "line": 111,
+          "line": 148,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -215,7 +215,7 @@
         },
         {
           "name": "upsertExpense",
-          "line": 117,
+          "line": 154,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -223,7 +223,7 @@
         },
         {
           "name": "deleteExpense",
-          "line": 126,
+          "line": 163,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -231,7 +231,7 @@
         },
         {
           "name": "getTotals",
-          "line": 135,
+          "line": 172,
           "declaration": "createServerFn",
           "service": "ExpenseService",
           "repository": "ExpenseRepository",
@@ -242,6 +242,7 @@
         "@/db/schema",
         "@/lib/financial-values",
         "@/lib/optimistic-version",
+        "@/lib/output-contract",
         "@/lib/request-context",
         "@/middleware/request-context",
         "@/server/services/expense.service",
@@ -267,7 +268,7 @@
       "operations": [
         {
           "name": "runSimulation",
-          "line": 19,
+          "line": 111,
           "declaration": "createServerFn",
           "service": "SimulationService",
           "repository": "SimulationRepository",
@@ -275,7 +276,7 @@
         },
         {
           "name": "listSimulations",
-          "line": 47,
+          "line": 141,
           "declaration": "createServerFn",
           "service": "SimulationService",
           "repository": "SimulationRepository",
@@ -283,7 +284,7 @@
         },
         {
           "name": "saveSimulation",
-          "line": 54,
+          "line": 148,
           "declaration": "createServerFn",
           "service": "SimulationService",
           "repository": "SimulationRepository",
@@ -291,6 +292,9 @@
         }
       ],
       "imports": [
+        "@/lib/finance",
+        "@/lib/financial-values",
+        "@/lib/output-contract",
         "@/middleware/request-context",
         "@/server/services/financial.service",
         "@/server/services/simulation.service",
@@ -315,7 +319,7 @@
       "operations": [
         {
           "name": "listProducts",
-          "line": 339,
+          "line": 386,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -323,7 +327,7 @@
         },
         {
           "name": "listProductsWithMetrics",
-          "line": 347,
+          "line": 398,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -331,7 +335,7 @@
         },
         {
           "name": "getProduct",
-          "line": 353,
+          "line": 404,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -339,7 +343,7 @@
         },
         {
           "name": "createProduct",
-          "line": 444,
+          "line": 495,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductRepository",
@@ -347,7 +351,7 @@
         },
         {
           "name": "updateProduct",
-          "line": 449,
+          "line": 500,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductRepository",
@@ -355,7 +359,7 @@
         },
         {
           "name": "upsertProduct",
-          "line": 455,
+          "line": 506,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductRepository",
@@ -363,7 +367,7 @@
         },
         {
           "name": "archiveProduct",
-          "line": 464,
+          "line": 515,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductRepository",
@@ -371,7 +375,7 @@
         },
         {
           "name": "deleteProduct",
-          "line": 474,
+          "line": 525,
           "declaration": "alias",
           "service": "ProductService",
           "repository": "ProductRepository",
@@ -379,7 +383,7 @@
         },
         {
           "name": "upsertIngredient",
-          "line": 507,
+          "line": 558,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -387,7 +391,7 @@
         },
         {
           "name": "deleteIngredient",
-          "line": 568,
+          "line": 619,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -395,7 +399,7 @@
         },
         {
           "name": "upsertPackaging",
-          "line": 583,
+          "line": 634,
           "declaration": "createServerFn",
           "service": "ProductService/PricingService",
           "repository": "ProductCatalogRepository + PriceRepository",
@@ -403,7 +407,7 @@
         },
         {
           "name": "deletePackaging",
-          "line": 608,
+          "line": 659,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -411,7 +415,7 @@
         },
         {
           "name": "upsertFee",
-          "line": 622,
+          "line": 673,
           "declaration": "createServerFn",
           "service": "PricingService",
           "repository": "ProductCatalogRepository",
@@ -419,7 +423,7 @@
         },
         {
           "name": "deleteFee",
-          "line": 636,
+          "line": 687,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -427,7 +431,7 @@
         },
         {
           "name": "setMarketPrice",
-          "line": 648,
+          "line": 699,
           "declaration": "createServerFn",
           "service": "PricingService",
           "repository": "MarketPriceRepository",
@@ -435,7 +439,7 @@
         },
         {
           "name": "getProductMetrics",
-          "line": 662,
+          "line": 713,
           "declaration": "createServerFn",
           "service": "ProductService",
           "repository": "ProductCatalogRepository",
@@ -443,7 +447,7 @@
         },
         {
           "name": "listPurchasePrices",
-          "line": 674,
+          "line": 725,
           "declaration": "createServerFn",
           "service": "PricingService",
           "repository": "ProductCatalogRepository",
@@ -451,7 +455,7 @@
         },
         {
           "name": "updatePurchasePrice",
-          "line": 685,
+          "line": 736,
           "declaration": "createServerFn",
           "service": "PricingService",
           "repository": "PriceRepository",
@@ -463,6 +467,7 @@
         "@/lib/finance",
         "@/lib/financial-values",
         "@/lib/optimistic-version",
+        "@/lib/output-contract",
         "@/lib/request-context",
         "@/middleware/request-context",
         "@/server/contracts/product.contracts",

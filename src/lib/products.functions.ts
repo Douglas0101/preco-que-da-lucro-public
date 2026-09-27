@@ -4,6 +4,7 @@ import { z } from "zod";
 import { ApplicationError } from "@/lib/api-error";
 import type { FeeRow, IngredientRow, PackagingRow } from "@/lib/finance";
 import {
+  decimalStringSchema,
   nonNegativeDecimalStringSchema,
   percentFractionSchema,
   positiveDecimalStringSchema,
@@ -11,6 +12,7 @@ import {
   toDecimalString,
 } from "@/lib/financial-values";
 import { optimisticVersionSchema } from "@/lib/optimistic-version";
+import { outputSchema } from "@/lib/output-contract";
 import type { RequestContext } from "@/lib/request-context";
 import { requireDatabaseAuth } from "@/middleware/request-context";
 import type {
@@ -336,12 +338,61 @@ async function loadProductReadModels(request: RequestContext) {
   });
 }
 
+/**
+ * Contrato de saída da listagem de produtos (DBT-25): a projeção snake_case com
+ * os preços do produto. `current_price`/`yield_qty`/`tax_rate` são NUMERIC do
+ * Postgres — string decimal canônica, nunca número.
+ *
+ * A lista de status não é uma segunda lista: as chaves do mapa são o tipo
+ * canônico `ProductStatus`, então o compilador reprova membro faltando e membro
+ * inventado. Importar a tupla de valores diretamente do schema do banco seria
+ * mais direto e está errado aqui — transformaria este BFF em arquivo com acesso
+ * direto ao banco na matriz M-02 (`directDatabaseFiles`), que é contrato, e o
+ * port de contratos de produto proíbe esse acoplamento por asserção.
+ */
+const PRODUCT_STATUS_BY_ITSELF: Readonly<Record<ProductStatus, ProductStatus>> = {
+  draft: "draft",
+  incomplete: "incomplete",
+  ready: "ready",
+  active: "active",
+  archived: "archived",
+};
+
+const productStatusOutput = z.enum(
+  Object.values(PRODUCT_STATUS_BY_ITSELF) as [ProductStatus, ...ProductStatus[]],
+);
+
+const productViewOutput = z.object({
+  id: z.string(),
+  tenant_id: z.string(),
+  user_id: z.string(),
+  name: z.string(),
+  status: productStatusOutput,
+  current_price: decimalStringSchema.nullable(),
+  yield_qty: decimalStringSchema.nullable(),
+  yield_unit: z.string().nullable(),
+  tax_regime: z.string().nullable(),
+  tax_rate: decimalStringSchema.nullable(),
+  is_demo: z.boolean(),
+  notes: z.string().nullable(),
+  version: z.int(),
+  archived_at: z.string().nullable(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}) satisfies z.ZodType<Awaited<ReturnType<typeof loadProductReadModels>>[number]["product"]>;
+
+const productListOutput = z.array(productViewOutput);
+
 export const listProducts = createServerFn({ method: "GET" })
   .middleware([requireDatabaseAuth])
   .handler(async ({ context }) => {
     const request = context.requestContext;
     const rows = await loadProductReadModels(request);
-    return rows.map(({ product }) => product);
+    return outputSchema(
+      productListOutput,
+      "products.listProducts",
+      rows.map(({ product }) => product),
+    );
   });
 
 export const listProductsWithMetrics = createServerFn({ method: "GET" })

@@ -1,8 +1,13 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { expenses } from "@/db/schema";
-import { nonNegativeDecimalStringSchema, toDecimalString } from "@/lib/financial-values";
+import {
+  decimalStringSchema,
+  nonNegativeDecimalStringSchema,
+  toDecimalString,
+} from "@/lib/financial-values";
 import { optimisticVersionSchema } from "@/lib/optimistic-version";
+import { outputSchema } from "@/lib/output-contract";
 import type { RequestContext } from "@/lib/request-context";
 import { requireDatabaseAuth } from "@/middleware/request-context";
 import { expenseService } from "@/server/services/expense.service";
@@ -68,11 +73,43 @@ function mapExpense(row: typeof expenses.$inferSelect) {
   };
 }
 
+/**
+ * Contratos de saída das server functions de despesa (DBT-25). O `amount` é
+ * NUMERIC(19,4) do Postgres — string decimal canônica, nunca número — e o
+ * `satisfies` prova em tempo de compilação que o schema bate com o tipo real
+ * que o handler devolve.
+ */
+const expenseViewOutput = z.object({
+  id: z.string(),
+  user_id: z.string(),
+  tenant_id: z.string(),
+  name: z.string(),
+  category: z.string().nullable(),
+  amount: decimalStringSchema,
+  type: z.string(),
+  periodicity: z.string(),
+  is_demo: z.boolean(),
+  notes: z.string().nullable(),
+  version: z.int(),
+  created_at: z.string(),
+  updated_at: z.string(),
+}) satisfies z.ZodType<ReturnType<typeof mapExpense>>;
+
+const expensesListOutput = z.array(expenseViewOutput);
+
+/** Totais de despesa: somas do banco (string decimal) + contagem de produtos. */
+const expenseTotalsOutput = z.object({
+  fixed: decimalStringSchema,
+  variable: decimalStringSchema,
+  /** Contagem de produtos ativos: inteiro do banco, não valor monetário. */
+  productCount: z.int().nonnegative(),
+}) satisfies z.ZodType<Awaited<ReturnType<typeof expenseService.totals>>>;
+
 export const listExpenses = createServerFn({ method: "GET" })
   .middleware([requireDatabaseAuth])
   .handler(async ({ context }) => {
     const rows = await expenseService.list(context.requestContext);
-    return rows.map(mapExpense);
+    return outputSchema(expensesListOutput, "expenses.listExpenses", rows.map(mapExpense));
   });
 
 function toExpenseWrite(data: ExpenseFields) {
@@ -135,5 +172,6 @@ export const deleteExpense = createServerFn({ method: "POST" })
 export const getTotals = createServerFn({ method: "GET" })
   .middleware([requireDatabaseAuth])
   .handler(async ({ context }) => {
-    return expenseService.totals(context.requestContext);
+    const totals = await expenseService.totals(context.requestContext);
+    return outputSchema(expenseTotalsOutput, "expenses.getTotals", totals);
   });
