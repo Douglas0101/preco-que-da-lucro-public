@@ -99,8 +99,13 @@ function listarTextos(root, saida = []) {
   return saida;
 }
 
+/** Ordenação determinística. Um `.sort()` sem comparador reprova em
+ * `javascript:S2871` (CRITICAL/BUG — alimenta `new_reliability_rating`), e
+ * `localeCompare` não serve aqui: depende do ICU da máquina, o que tornaria a
+ * saída deste gate diferente entre ambientes. O comparador explícito reproduz
+ * exatamente o `sort()` padrão, sem depender de locale. */
 function unicos(valores) {
-  return [...new Set(valores)].sort();
+  return [...new Set(valores)].sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /** Check 1 — cada caminho de ADR citado resolve para um arquivo existente. */
