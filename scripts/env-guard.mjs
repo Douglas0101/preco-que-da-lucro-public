@@ -406,20 +406,20 @@ const SELFTEST_CASES = [
   {
     name: "remoto+test",
     script: "test",
-    env: { DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test" },
+    env: { DATABASE_URL: "postgresql://fake:fake@ep-fake.neon.tech/db" },
     expected: "DENY",
   },
   {
     name: "remoto+smoke:substrate",
     script: "smoke:substrate",
-    env: { DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test" },
+    env: { DATABASE_URL: "postgresql://fake:fake@ep-fake.neon.tech/db" },
     expected: "ALLOW",
   },
   {
     name: "remoto+test+ALLOW_REMOTE_DB",
     script: "test",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-fake.neon.tech/db",
       ALLOW_REMOTE_DB: "teste interno",
     },
     expected: "ALLOW+override-log",
@@ -428,7 +428,7 @@ const SELFTEST_CASES = [
     name: "remoto+db:migrate+ALLOW_REMOTE_DB",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-fake.neon.tech/db",
       ALLOW_REMOTE_DB: "teste interno",
     },
     expected: "DENY",
@@ -443,7 +443,7 @@ const SELFTEST_CASES = [
     name: "drill-branch+db:migrate+ALLOW_REMOTE_DB",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-drill-branch-xyz.c-5.us-east-2.aws.neon.tech/db",
       ALLOW_REMOTE_DB: "dry-run V2 CUTOVER-READY",
       NEON_MIGRATION_TARGET_KIND: "drill-branch",
     },
@@ -453,7 +453,7 @@ const SELFTEST_CASES = [
     name: "producao+db:migrate+drill-branch",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-long-violet-aye9g0bn.c-5.us-east-2.aws.neon.tech/db",
       ALLOW_REMOTE_DB: "dry-run V2 CUTOVER-READY",
       NEON_MIGRATION_TARGET_KIND: "drill-branch",
     },
@@ -463,7 +463,7 @@ const SELFTEST_CASES = [
     name: "cutover-window+producao+janela-vigente",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-long-violet-aye9g0bn.c-5.us-east-2.aws.neon.tech/db",
       ALLOW_REMOTE_DB: "migração T-0 do cutover A4",
       NEON_MIGRATION_TARGET_KIND: "cutover-window",
       NEON_MIGRATION_FREEZE_START: new Date(Date.now() - 60_000).toISOString(),
@@ -475,7 +475,7 @@ const SELFTEST_CASES = [
     name: "cutover-window+producao+janela-expirada",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-long-violet-aye9g0bn.c-5.us-east-2.aws.neon.tech/db",
       ALLOW_REMOTE_DB: "migração T-0 do cutover A4",
       NEON_MIGRATION_TARGET_KIND: "cutover-window",
       NEON_MIGRATION_FREEZE_START: new Date(Date.now() - 7_200_000).toISOString(),
@@ -487,7 +487,7 @@ const SELFTEST_CASES = [
     name: "cutover-window+producao+sem-override",
     script: "db:migrate",
     env: {
-      DATABASE_URL: "postgresql://127.0.0.1:5432/preco_test",
+      DATABASE_URL: "postgresql://fake:fake@ep-long-violet-aye9g0bn.c-5.us-east-2.aws.neon.tech/db",
       NEON_MIGRATION_TARGET_KIND: "cutover-window",
       NEON_MIGRATION_FREEZE_START: new Date(Date.now() - 60_000).toISOString(),
       NEON_MIGRATION_FREEZE_END: new Date(Date.now() + 3_600_000).toISOString(),
@@ -503,7 +503,7 @@ const SELFTEST_CASES = [
   {
     name: "remoto+m02:snapshot",
     script: "m02:snapshot",
-    env: { DATABASE_ADMIN_URL: "postgresql://127.0.0.1:5432/preco_test" },
+    env: { DATABASE_ADMIN_URL: "postgresql://fake:fake@ep-fake.neon.tech/db" },
     expected: "ALLOW",
   },
 ];
