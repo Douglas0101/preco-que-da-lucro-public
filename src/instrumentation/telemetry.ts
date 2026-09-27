@@ -103,6 +103,13 @@ export const applicationMetrics = {
   aiTimeToFinal: meter.createHistogram("app.ai.time_to_final", { unit: "ms" }),
   toolDuration: meter.createHistogram("app.ai.tool.duration", { unit: "ms" }),
   errors: meter.createCounter("app.errors"),
+  // §46 — `unauthorized_request_block_rate`. Conta os dois motivos pelos quais
+  // o middleware BFF recusa antes de qualquer trabalho: sem sessão (`AUTH`)
+  // e sem membership no tenant (`AUTHZ`). `reason` é o código da taxonomia
+  // (conjunto fechado de 2), nunca correlation-id — cardinalidade finita.
+  // `app.errors` não cobre este caminho: a recusa devolve uma `Response`, que
+  // `start.ts` tratou fora do ramo que grava `errors.add`.
+  authFailures: meter.createCounter("app.auth.failures"),
   aiTimeouts: meter.createCounter("app.ai.timeouts"),
   aiQuotas: meter.createCounter("app.ai.quotas"),
   aiEstimatedCostTotal: meter.createCounter("app.ai.estimated_cost_total"),

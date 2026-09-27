@@ -9,13 +9,30 @@ import {
   type DatabaseTransaction,
 } from "@/db/client.server";
 import { tenantMemberships } from "@/db/schema";
-import { withSpan } from "@/instrumentation/telemetry";
+import { applicationMetrics, withSpan } from "@/instrumentation/telemetry";
 import { apiErrorResponse, errorCodeFromUnknown } from "@/lib/api-error";
 import { bindTransactionContext, type RequestIdentity } from "@/lib/request-context";
 import { logJson } from "@/lib/structured-logger";
 import { getAuth } from "@/server/auth/auth.server";
 
 const uuid = z.string().uuid();
+
+type AuthRejection = "AUTHENTICATION_ERROR" | "AUTHORIZATION_ERROR";
+
+/**
+ * Recusa de autenticação/autorização do BFF: conta o motivo e devolve a
+ * Response.
+ *
+ * Este é o único contador que alcança este caminho. `app.errors` não o cobre:
+ * a recusa nasce como `Response`, e `start.ts` grava `errors.add` apenas no
+ * ramo de erro inesperado — um 401 nunca chega lá. `reason` é o código da
+ * taxonomia (conjunto fechado de 2): correlation-id ficaria fora por
+ * cardinalidade.
+ */
+function authFailure(code: AuthRejection, correlationId: string): Response {
+  applicationMetrics.authFailures.add(1, { reason: code });
+  return apiErrorResponse(code, correlationId);
+}
 
 async function selectMembership(
   transaction: DatabaseTransaction,
@@ -77,9 +94,9 @@ async function authenticateRequest(options: {
     headers: request.headers,
     query: { disableCookieCache: true },
   });
-  if (!session) throw apiErrorResponse("AUTHENTICATION_ERROR", correlationId);
+  if (!session) throw authFailure("AUTHENTICATION_ERROR", correlationId);
   const membership = await resolveMembership(session.user.id, request.headers.get("x-tenant-id"));
-  if (!membership) throw apiErrorResponse("AUTHORIZATION_ERROR", correlationId);
+  if (!membership) throw authFailure("AUTHORIZATION_ERROR", correlationId);
   return {
     userId: session.user.id,
     tenantId: membership.tenantId,
@@ -120,10 +137,10 @@ export const requireDatabaseAuth = createMiddleware({ type: "function" }).server
           headers: request.headers,
           query: { disableCookieCache: true },
         });
-        if (!session) throw apiErrorResponse("AUTHENTICATION_ERROR", correlationId);
+        if (!session) throw authFailure("AUTHENTICATION_ERROR", correlationId);
         const requestedTenantId = request.headers.get("x-tenant-id");
         if (requestedTenantId && !uuid.safeParse(requestedTenantId).success) {
-          throw apiErrorResponse("AUTHORIZATION_ERROR", correlationId);
+          throw authFailure("AUTHORIZATION_ERROR", correlationId);
         }
         return await withResolvedTenantTransaction(
           session.user.id,
@@ -147,7 +164,7 @@ export const requireDatabaseAuth = createMiddleware({ type: "function" }).server
       } catch (error) {
         if (error instanceof Response) throw error;
         if (error instanceof TenantMembershipDeniedError) {
-          throw apiErrorResponse("AUTHORIZATION_ERROR", correlationId);
+          throw authFailure("AUTHORIZATION_ERROR", correlationId);
         }
         const code = errorCodeFromUnknown(error);
         logJson("error", "bff.request_failed", { correlationId, code, error });
