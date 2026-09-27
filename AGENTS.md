@@ -19,7 +19,8 @@
 
 ## Local quality gate (definition of done)
 
-- Before pushing, run `npm run check` and keep it green. It chains `m02:lockfile-guard`, `m02:work-package-guard`, `m02:debts-guard`, `m02:temporal-guard`, `m02:boundaries`, `m02:secrets-audit`, `m02:seal-dts:check`, `m02:matrix:check`, `check:ui-stack`, `check:no-supabase-runtime`, `format:check`, `lint`, `typecheck`, `test`, `build`, and `check:bundle`.
+- Before pushing, run `npm run check` and keep it green. It chains `m02:lockfile-guard`, `guard:upgrade`, `check:migration-toolchain`, `guard:contracts`, `m02:work-package-guard`, `m02:debts-guard`, `m02:temporal-guard`, `m02:boundaries`, `m02:secrets-audit`, `m02:seal-dts:check`, `m02:matrix:check`, `check:sdd-drift`, `check:ui-stack`, `check:no-supabase-runtime`, `format:check`, `lint`, `typecheck`, `test`, `build`, and `check:bundle` — **20 gates**.
+- The public CI runs `npm run check:public` (**14 gates**): the same chain minus the three evidence-dependent guards (`m02:work-package-guard`, `m02:debts-guard`, `m02:temporal-guard` — they need `docs/evidence/**`, deliberately absent from this snapshot) and minus `guard:upgrade`, `check:migration-toolchain` and `guard:contracts`, which run only locally. **Declared coverage gap, not a skipped gate.**
 - The CI `verify` job (`.github/workflows/ui-stack.yml`) runs **14 dos 16** scripts da cadeia `check` como passos diretos, mais `npm audit --audit-level=high`, e — **em tiers** — `db:test`/`db:check` (diff de banco) e Playwright e2e (chromium+mobile no push, +firefox+webkit no PR); a matriz completa roda em **todo PR** e no `workflow_dispatch`. A push that skips the local gate wastes a CI cycle; treat any red as debt, never as noise.
 
   **Cobertura de guardas, por pipeline (não é "os mesmos gates" — é esta tabela; DBT-19):**
@@ -29,7 +30,7 @@
   | `m02:work-package-guard`, `m02:debts-guard`, `m02:temporal-guard` | ✔ | ✔ (passo direto) | ✔ (passo direto) |
   | `m02:lockfile-guard` | ✔ | ✘ — o *drift* é pego por `npm ci --ignore-scripts` (`EUSAGE`); a asserção do pin de `drizzle-kit` **não** roda em push de código | ✔ (passo direto) |
   | `m02:seal-dts:check` | ✔ | ✘ como passo — coberto **por equivalente** dentro de `npm run test` (`src/test/m02-seal.test.ts` executa `generate-seal-dts.mjs --check` e falha por byte-diff, com controle negativo) | ✘ |
-  | `m02:matrix:check`, `check:ui-stack`, `check:no-supabase-runtime`, `format:check`, `lint`, `typecheck`, `test`, `build`, `check:bundle` | ✔ | ✔ (passo direto) | ✘ (só `format:check` nos arquivos alterados) |
+  | `m02:matrix:check`, `check:sdd-drift`, `check:ui-stack`, `check:no-supabase-runtime`, `format:check`, `lint`, `typecheck`, `test`, `build`, `check:bundle` | ✔ | ✔ (passo direto) | ✘ (só `format:check` nos arquivos alterados) |
   | `m02:secrets-audit` | ✔ | ✔ (passo direto) | ✔ (passo direto) — **encadeado em 2026-09-23** (commit `c7e6a55`): até então um push **só de código** nunca o executava |
   | `m02:boundaries` | ✔ | ✔ (passo direto) | ✘ — a light só dispara quando **todos** os arquivos alterados estão sob `docs/evidence/**`, e a matriz (`docs/specs/M-02/`) não muda nesse caso. **Encadeado em 2026-09-23** (commit `c7e6a55`): até então não estava ligado a gate nenhum |
   | `m02:state:check` | ✘ | ✘ | ✘ — é passo do protocolo de boot, roda à mão |
