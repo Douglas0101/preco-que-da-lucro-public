@@ -773,7 +773,7 @@ export function collectContractInput(root: string): ContractGuardInput {
 export async function main(): Promise<never> {
   let root = process.cwd();
   try {
-    const top = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+    const top = execFileSync("/usr/bin/git", ["rev-parse", "--show-toplevel"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();

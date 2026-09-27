@@ -518,7 +518,7 @@ function precondicao(reason: string, observed: Record<string, unknown>): never {
 
 function localizarRaiz(): string {
   try {
-    const top = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+    const top = execFileSync("/usr/bin/git", ["rev-parse", "--show-toplevel"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
@@ -570,7 +570,7 @@ function coletarResolvidos(lock: unknown): Record<string, string> {
 
 function coletarHeadSpecs(root: string): Record<string, string> {
   try {
-    const raw = execFileSync("git", ["show", "HEAD:package.json"], {
+    const raw = execFileSync("/usr/bin/git", ["show", "HEAD:package.json"], {
       encoding: "utf8",
       cwd: root,
       stdio: ["ignore", "pipe", "ignore"],
