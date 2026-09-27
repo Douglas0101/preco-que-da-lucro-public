@@ -1,0 +1,112 @@
+{
+  "schema": "dependency-policy/1",
+  "policy": "Faixas em major.minor.patch, comparadas sem dependência externa (o guard implementa a comparação). Um pacote `critical` não pode ter a faixa estreitada para baixo sem Downgrade Request aprovado em `approvals/`. `min` e `max` são limites INCLUSIVOS: uma versão fora da faixa reprova. A remoção de um pacote listado aqui também reprova — sumir com a toolchain é downgrade por outro nome.",
+  "approvalsDir": "scripts/dependency-approvals",
+  "packages": [
+    {
+      "name": "drizzle-kit",
+      "criticality": "critical",
+      "min": "0.31.0",
+      "max": "0.31.99",
+      "reason": "toolchain de migration; `defineConfig` exigido por drizzle.config.ts; INV-012 (migrations reproduzíveis)"
+    },
+    {
+      "name": "drizzle-orm",
+      "criticality": "critical",
+      "min": "0.45.0",
+      "max": "0.45.99",
+      "reason": "ORM; toda query parametrizada e tipada depende dele (INV-001, INV-003, INV-008)"
+    },
+    {
+      "name": "pg",
+      "criticality": "critical",
+      "min": "8.23.0",
+      "max": "8.99.99",
+      "reason": "driver do runtime e das migrations; versão e pooled/direct importam para PgBouncer em transaction mode"
+    },
+    {
+      "name": "@neondatabase/serverless",
+      "criticality": "critical",
+      "min": "1.1.0",
+      "max": "1.99.99",
+      "reason": "conexão Neon; INV-011 (Neon é substituível) pressupõe o driver estável"
+    },
+    {
+      "name": "zod",
+      "criticality": "critical",
+      "min": "4.4.0",
+      "max": "4.99.99",
+      "reason": "validação runtime de toda tool da IA e dos contratos BFF (INV-014, IA-001 §6.10)"
+    },
+    {
+      "name": "decimal.js",
+      "criticality": "critical",
+      "min": "10.6.0",
+      "max": "10.6.99",
+      "reason": "aritmética do Financial Engine; regra de rounding muda entre majors e altera resultado financeiro (INV-004, FIN-003)"
+    },
+    {
+      "name": "@tanstack/react-start",
+      "criticality": "critical",
+      "min": "1.168.0",
+      "max": "1.99.99",
+      "reason": "framework em Release Candidate; server functions, cookies e CSP dependem dele (§2.2)"
+    },
+    {
+      "name": "@tanstack/react-router",
+      "criticality": "critical",
+      "min": "1.170.0",
+      "max": "1.99.99",
+      "reason": "rotas e loaders; beforeLoad é UX, não fronteira de segurança (§2.1)"
+    },
+    {
+      "name": "@tanstack/react-query",
+      "criticality": "high",
+      "min": "5.101.0",
+      "max": "5.99.99",
+      "reason": "camada de server state; downgrade costuma trazer query-key e stale-time divergentes"
+    },
+    {
+      "name": "react",
+      "criticality": "critical",
+      "min": "19.2.0",
+      "max": "19.99.99",
+      "reason": "runtime de UI; refs, ARIA e handlers do design system dependem da versão"
+    },
+    {
+      "name": "react-dom",
+      "criticality": "critical",
+      "min": "19.2.0",
+      "max": "19.99.99",
+      "reason": "runtime de UI; par com react e com o budget de bundle"
+    },
+    {
+      "name": "better-auth",
+      "criticality": "critical",
+      "min": "1.6.0",
+      "max": "1.99.99",
+      "reason": "sessão e cookies; downgrade altera HttpOnly/Secure/SameSite e rotação (AUTH-002..005)"
+    },
+    {
+      "name": "vite",
+      "criticality": "high",
+      "min": "8.0.0",
+      "max": "8.99.99",
+      "reason": "bundler e preset Nitro; muda o formato de saída que o deploy consome"
+    },
+    {
+      "name": "typescript",
+      "criticality": "medium",
+      "min": "5.8.0",
+      "max": "5.99.99",
+      "reason": "typecheck é gate; um minor pode introduzir erro novo em todo o projeto"
+    },
+    {
+      "name": "vitest",
+      "criticality": "medium",
+      "min": "4.1.0",
+      "max": "4.99.99",
+      "reason": "runner da suíte; matcher ou ambiente mudados alteram o veredicto dos testes"
+    }
+  ]
+}

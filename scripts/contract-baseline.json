@@ -1,0 +1,9 @@
+{
+  "schema": "contract-baseline/1",
+  "note": "Piso DECLARADO, não meta. O guard reprova quando a dívida de contrato de saída CRESCE: toda server function adicionada depois deste precisa vir com schema de saída. O número absoluto nunca é escondido — `observed.outputContracts` e o detalhe do check sempre o carregam, e a dívida está em DBT-25. Ausência ou malformação deste arquivo é PRECONDIÇÃO (exit 2), nunca um piso implícito de zero.",
+  "outputContracts": 5,
+  "serverFunctions": 35,
+  "debt": "DBT-25",
+  "declaredAt": "2026-09-25",
+  "evidence": "docs/upgrades/CONTRACT-POLICY.md"
+}
