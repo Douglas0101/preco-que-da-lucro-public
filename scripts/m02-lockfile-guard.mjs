@@ -91,7 +91,7 @@ function emit(ok, error, code) {
 
 try {
   try {
-    const top = execFileSync("git", ["rev-parse", "--show-toplevel"], {
+    const top = execFileSync("/usr/bin/git", ["rev-parse", "--show-toplevel"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     }).trim();
@@ -159,7 +159,7 @@ try {
   observed.lockSha256 = lockSha;
   let headLock = null;
   try {
-    headLock = execFileSync("git", ["show", `HEAD:${LOCK}`], {
+    headLock = execFileSync("/usr/bin/git", ["show", `HEAD:${LOCK}`], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"],
     });
